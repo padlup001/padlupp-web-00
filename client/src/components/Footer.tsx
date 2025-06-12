@@ -1,6 +1,8 @@
 import type { FC } from "react";
 import { Image } from "./Image";
 import { Link } from "./Link";
+import { Instagram, Linkedin } from "lucide-react";
+import { X } from "lucide-react";
 import frameImage from "../assets/images/logo.png";
 
 export const Footer: FC = () => {
@@ -40,19 +42,31 @@ export const Footer: FC = () => {
             </div>
             <div className="flex flex-col items-center space-y-2 md:flex-row md:space-y-0 md:space-x-4">
               <div className="text-sm text-gray-600">Follow us:</div>
-              <div className="flex space-x-2">
-                {[
-                  { color: "from-[#4E92F4] to-[#7938BE]", href: "#" },
-                  { color: "from-[#7938BE] to-[#4E92F4]", href: "#" },
-                  { color: "from-[#4E92F4] to-[#7938BE]", href: "#" },
-                  { color: "from-[#7938BE] to-[#4E92F4]", href: "#" },
-                ].map((social, i) => (
-                  <Link
-                    key={i}
-                    href={social.href}
-                    className={`w-8 h-8 bg-gradient-to-r ${social.color} rounded-full transition-transform hover:scale-110`}
-                  />
-                ))}
+              <div className="flex space-x-4">
+                <Link
+                  href="https://x.com/padlupp"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600"
+                >
+                  <X className="w-5 h-5" />
+                </Link>
+                <Link
+                  href="https://www.instagram.com/padlupp?igsh=MTFoMXp5N28wYmo2dw=="
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600"
+                >
+                  <Instagram className="w-5 h-5" />
+                </Link>
+                <Link
+                  href="https://www.linkedin.com/company/padlupp/posts/?feedView=all"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600"
+                >
+                  <Linkedin className="w-5 h-5" />
+                </Link>
               </div>
             </div>
           </div>

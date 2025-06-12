@@ -1,5 +1,5 @@
 import type { FC } from "react";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "./components/Button";
 import { Card } from "./components/Card";
 import { Image } from "./components/Image";
@@ -7,6 +7,7 @@ import { Header } from "./components/Header";
 import { Footer } from "./components/Footer";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { WaitlistForm } from "./components/WaitlistForm";
+import { ExpandableCard } from "./components/ExpandableCard";
 import whyImage from "./assets/images/why.png";
 import toolsImage from "./assets/images/tools.png";
 import communityImage from "./assets/images/community_image.png";
@@ -15,6 +16,54 @@ import cardRightImage from "./assets/images/card_right.png";
 
 export const LandingPage: FC = () => {
   const [showWaitlist, setShowWaitlist] = useState(false);
+  const [currentTestimonialCardIndex, setCurrentTestimonialCardIndex] =
+    useState(0);
+
+  const testimonialCardsContainerRef = useRef<HTMLDivElement>(null);
+
+  const testimonialsContent = [
+    {
+      text: "This app has been great for staying organized and focused on my goals. As someone new to this UI and productivity space, I found it intuitive and easy to use. The community aspect enhances goal tracking tools, and the valuable AI insights make it exactly what I needed to stay motivated and organized.",
+      name: "Olumide Sanni",
+      role: "Product Designer",
+    },
+    {
+      text: "For someone who finds it hard to connect with people at the same frequency, this platform has been a game-changer. I love that I can find like-minded individuals who share similar goals and that I can without feeling like I'm messaging to fill a group. This has been a great way to stay accountable and motivated.",
+      name: "Tara A.",
+      role: "Startup Founder",
+    },
+    {
+      text: "I procrastinate a lot and struggle to follow up on goals I set which is supposed timeline. This platform has made me more accountable to myself and others. I love the community aspect and how it keeps me motivated to achieve my goals.",
+      name: "Ifeoma John",
+      role: "Software Engineer",
+    },
+  ];
+
+  const handlePreviousTestimonialCard = () => {
+    setCurrentTestimonialCardIndex((prevIndex) => {
+      const newIndex =
+        prevIndex === 0 ? testimonialsContent.length - 2 : prevIndex - 1;
+      if (testimonialCardsContainerRef.current) {
+        const cardWidth =
+          testimonialCardsContainerRef.current.children[0].clientWidth;
+        testimonialCardsContainerRef.current.scrollLeft = newIndex * cardWidth;
+      }
+      return newIndex;
+    });
+  };
+
+  const handleNextTestimonialCard = () => {
+    setCurrentTestimonialCardIndex((prevIndex) => {
+      const newIndex =
+        prevIndex === testimonialsContent.length - 2 ? 0 : prevIndex + 1;
+      if (testimonialCardsContainerRef.current) {
+        const cardWidth =
+          testimonialCardsContainerRef.current.children[0].clientWidth;
+        testimonialCardsContainerRef.current.scrollLeft = newIndex * cardWidth;
+      }
+      return newIndex;
+    });
+  };
 
   const handleJoinWaitlist = () => {
     setShowWaitlist(true);
@@ -96,6 +145,9 @@ export const LandingPage: FC = () => {
 
       {/* Why Padlupp Section */}
       <section id="why-padlupp" className="max-w-4xl mx-auto px-4 py-16">
+        <h2 className="text-3xl font-bold text-gray-900 text-center mb-8">
+          Why Padlupp?
+        </h2>
         <div className="flex justify-center">
           <div className="w-full bg-white p-12 rounded-2xl shadow-lg">
             <Image
@@ -188,45 +240,45 @@ export const LandingPage: FC = () => {
           <h2 className="text-3xl font-bold text-gray-900">
             What everyone says
           </h2>
-          <div className="flex space-x-2">
-            <Button variant="outline" size="icon" className="rounded-full">
+          <div className="hidden md:flex space-x-2">
+            <Button
+              onClick={handlePreviousTestimonialCard}
+              variant="outline"
+              size="icon"
+              className="rounded-full"
+            >
               <ChevronLeft className="w-4 h-4" />
             </Button>
-            <Button variant="outline" size="icon" className="rounded-full">
+            <Button
+              onClick={handleNextTestimonialCard}
+              variant="outline"
+              size="icon"
+              className="rounded-full"
+            >
               <ChevronRight className="w-4 h-4" />
             </Button>
           </div>
         </div>
-        <div className="grid md:grid-cols-3 gap-8">
-          {[
-            {
-              text: "This app has been great for staying organized and focused on my goals. As someone new to this UI and productivity space, I found it intuitive and easy to use. The community aspect enhances goal tracking tools, and the valuable AI insights make it exactly what I needed to stay motivated and organized.",
-              name: "Olumide Sanni",
-              role: "Product Designer",
-            },
-            {
-              text: "For someone who finds it hard to connect with people at the same frequency, this platform has been a game-changer. I love that I can find like-minded individuals who share similar goals and that I can without feeling like I'm messaging to fill a group. This has been a great way to stay accountable and motivated.",
-              name: "Tara A.",
-              role: "Startup Founder",
-            },
-            {
-              text: "I procrastinate a lot and struggle to follow up on goals I set which is supposed timeline. This platform has made me more accountable to myself and others. I love the community aspect and how it keeps me motivated to achieve my goals.",
-              name: "Ifeoma John",
-              role: "Software Engineer",
-            },
-          ].map((testimonial, i) => (
-            <Card key={i} className="p-8 hover:shadow-lg transition-shadow">
-              <p className="text-gray-600 text-lg leading-relaxed mb-6">
-                {testimonial.text}
-              </p>
-              <div>
-                <p className="font-semibold text-gray-900">
-                  {testimonial.name}
-                </p>
-                <p className="text-sm text-gray-500">{testimonial.role}</p>
+        <div className="relative">
+          <div
+            ref={testimonialCardsContainerRef}
+            className="flex space-x-8 overflow-x-auto snap-x snap-mandatory pb-4 hide-scrollbar"
+          >
+            {testimonialsContent.map((testimonial, i) => (
+              <div
+                key={i}
+                className="w-[calc(80%-2rem)] md:w-[calc(50%-1rem)] flex-shrink-0 snap-start"
+              >
+                <ExpandableCard
+                  content={testimonial.text}
+                  maxLength={150}
+                  name={testimonial.name}
+                  role={testimonial.role}
+                  className="h-full"
+                />
               </div>
-            </Card>
-          ))}
+            ))}
+          </div>
         </div>
       </section>
 
@@ -247,24 +299,6 @@ export const LandingPage: FC = () => {
             >
               Join the waitlist
             </Button>
-          </div>
-          <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/4 hidden md:block">
-            <Image
-              src={cardLeftImage}
-              alt="Card Left"
-              width={200}
-              height={240}
-              className="opacity-70"
-            />
-          </div>
-          <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/4 hidden md:block">
-            <Image
-              src={cardRightImage}
-              alt="Card Right"
-              width={200}
-              height={240}
-              className="opacity-70"
-            />
           </div>
         </div>
       </section>
