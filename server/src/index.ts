@@ -13,11 +13,11 @@ import waitlistRoutes from './routes/waitlist.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 config({
-  path: path.resolve(__dirname, `../.env.${process.env.NODE_ENV || 'development'}`)
+  path: path.resolve(__dirname, `../env.${process.env.NODE_ENV || 'development'}`)
 });
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = 3000;
 
 // Connect to MongoDB
 connectDB();

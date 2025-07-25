@@ -1,13 +1,13 @@
 import type { FC } from "react";
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { Button } from "./components/Button";
-import { Card } from "./components/Card";
+
 import { Image } from "./components/Image";
 import { Header } from "./components/Header";
 import { Footer } from "./components/Footer";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { WaitlistForm } from "./components/WaitlistForm";
-import { ExpandableCard } from "./components/ExpandableCard";
+//import { ExpandableCard } from "./components/ExpandableCard";
 import whyImage from "./assets/images/why.png";
 import toolsImage from "./assets/images/tools.png";
 import communityImage from "./assets/images/community_image.png";
@@ -18,8 +18,6 @@ export const LandingPage: FC = () => {
   const [showWaitlist, setShowWaitlist] = useState(false);
   const [currentTestimonialCardIndex, setCurrentTestimonialCardIndex] =
     useState(0);
-
-  const testimonialCardsContainerRef = useRef<HTMLDivElement>(null);
 
   const testimonialsContent = [
     {
@@ -40,29 +38,15 @@ export const LandingPage: FC = () => {
   ];
 
   const handlePreviousTestimonialCard = () => {
-    setCurrentTestimonialCardIndex((prevIndex) => {
-      const newIndex =
-        prevIndex === 0 ? testimonialsContent.length - 2 : prevIndex - 1;
-      if (testimonialCardsContainerRef.current) {
-        const cardWidth =
-          testimonialCardsContainerRef.current.children[0].clientWidth;
-        testimonialCardsContainerRef.current.scrollLeft = newIndex * cardWidth;
-      }
-      return newIndex;
-    });
+    setCurrentTestimonialCardIndex((prevIndex) =>
+      prevIndex === 0 ? testimonialsContent.length - 1 : prevIndex - 1
+    );
   };
 
   const handleNextTestimonialCard = () => {
-    setCurrentTestimonialCardIndex((prevIndex) => {
-      const newIndex =
-        prevIndex === testimonialsContent.length - 2 ? 0 : prevIndex + 1;
-      if (testimonialCardsContainerRef.current) {
-        const cardWidth =
-          testimonialCardsContainerRef.current.children[0].clientWidth;
-        testimonialCardsContainerRef.current.scrollLeft = newIndex * cardWidth;
-      }
-      return newIndex;
-    });
+    setCurrentTestimonialCardIndex(
+      (prevIndex) => (prevIndex + 1) % testimonialsContent.length
+    );
   };
 
   const handleJoinWaitlist = () => {
@@ -235,17 +219,17 @@ export const LandingPage: FC = () => {
       </section>
 
       {/* Testimonials Section */}
-      <section className="max-w-4xl mx-auto px-4 py-16">
-        <div className="flex items-center justify-between mb-8">
+      <section className="max-w-6xl mx-auto px-4 py-16">
+        <div className="flex items-center justify-between mb-12">
           <h2 className="text-3xl font-bold text-gray-900">
             What everyone says
           </h2>
-          <div className="hidden md:flex space-x-2">
+          <div className="flex space-x-2">
             <Button
               onClick={handlePreviousTestimonialCard}
               variant="outline"
               size="icon"
-              className="rounded-full"
+              className="rounded-full bg-white hover:bg-gray-50 border-2 border-gray-200"
             >
               <ChevronLeft className="w-4 h-4" />
             </Button>
@@ -253,32 +237,90 @@ export const LandingPage: FC = () => {
               onClick={handleNextTestimonialCard}
               variant="outline"
               size="icon"
-              className="rounded-full"
+              className="rounded-full bg-white hover:bg-gray-50 border-2 border-gray-200"
             >
               <ChevronRight className="w-4 h-4" />
             </Button>
           </div>
         </div>
-        <div className="relative">
-          <div
-            ref={testimonialCardsContainerRef}
-            className="flex space-x-8 overflow-x-auto snap-x snap-mandatory pb-4 hide-scrollbar"
-          >
-            {testimonialsContent.map((testimonial, i) => (
+
+        <div className="relative h-[400px] flex items-center justify-center">
+          {/* Three cards positioned with center card prominent */}
+          {[0, 1, 2].map((offset) => {
+            const testimonialIndex =
+              (currentTestimonialCardIndex + offset) %
+              testimonialsContent.length;
+            const testimonial = testimonialsContent[testimonialIndex];
+            const isCenter = offset === 0;
+            //           const isLeft = offset === 2;
+            const isRight = offset === 1;
+
+            return (
               <div
-                key={i}
-                className="w-[calc(80%-2rem)] md:w-[calc(50%-1rem)] flex-shrink-0 snap-start"
+                key={testimonialIndex}
+                className={`absolute transition-all duration-500 ease-out ${
+                  isCenter
+                    ? "z-30 scale-110 transform translate-x-0"
+                    : isRight
+                    ? "z-20 scale-90 transform translate-x-40 rotate-6"
+                    : "z-20 scale-90 transform -translate-x-40 -rotate-6"
+                }`}
+                style={{
+                  filter: isCenter ? "none" : "brightness(0.8)",
+                }}
               >
-                <ExpandableCard
-                  content={testimonial.text}
-                  maxLength={150}
-                  name={testimonial.name}
-                  role={testimonial.role}
-                  className="h-full"
-                />
+                <div
+                  className={`w-80 h-96 relative cursor-pointer transition-all duration-300 ${
+                    !isCenter ? "hover:scale-95" : ""
+                  }`}
+                  onClick={() => {
+                    if (!isCenter) {
+                      setCurrentTestimonialCardIndex(testimonialIndex);
+                    }
+                  }}
+                >
+                  {/* Simple card design */}
+                  <div className="w-full h-full bg-white rounded-2xl shadow-lg hover:shadow-xl transition-shadow relative overflow-hidden border border-gray-100">
+                    <div className="p-8 flex flex-col justify-center h-full">
+                      <div className="mb-6">
+                        <p className="text-gray-600 text-lg leading-relaxed mb-6 line-clamp-6">
+                          "
+                          {testimonial.text.length > 200
+                            ? testimonial.text.substring(0, 200) + "..."
+                            : testimonial.text}
+                          "
+                        </p>
+                      </div>
+
+                      <div className="mt-auto">
+                        <h3 className="font-semibold text-gray-900 text-lg">
+                          {testimonial.name}
+                        </h3>
+                        <p className="text-sm text-gray-500">
+                          {testimonial.role}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
-            ))}
-          </div>
+            );
+          })}
+        </div>
+
+        {/* Dots indicator */}
+        <div className="flex justify-center mt-8 space-x-2">
+          {testimonialsContent.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => setCurrentTestimonialCardIndex(index)}
+              className={`w-3 h-3 rounded-full transition-all duration-200 ${
+                index === currentTestimonialCardIndex
+                  ? "bg-blue-600 scale-125"
+                  : "bg-gray-300 hover:bg-gray-400"
+              }`}
+            />
+          ))}
         </div>
       </section>
 

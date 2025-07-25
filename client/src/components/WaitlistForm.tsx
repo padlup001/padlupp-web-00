@@ -2,8 +2,7 @@ import type { FC } from "react";
 import { useState } from "react";
 import type { AxiosError } from "axios";
 import axios from "axios";
-import { Button } from "./Button";
-import { Input } from "./Input";
+
 import { ArrowRight } from "lucide-react";
 
 // Configure axios defaults

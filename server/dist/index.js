@@ -7,16 +7,15 @@ import { dirname } from 'path';
 import path from 'path';
 import connectDB from './config/database.js';
 import mongoose from 'mongoose';
-import testRoutes from './routes/test.js';
 import waitlistRoutes from './routes/waitlist.js';
 // Load environment variables based on NODE_ENV
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 config({
-    path: path.resolve(__dirname, `../.env.${process.env.NODE_ENV || 'development'}`)
+    path: path.resolve(__dirname, `../env.${process.env.NODE_ENV || 'development'}`)
 });
 const app = express();
-const port = process.env.PORT || 3000;
+const port = 3000;
 // Connect to MongoDB
 connectDB();
 // Middleware
@@ -28,7 +27,6 @@ app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 // Routes
-app.use('/api', testRoutes);
 app.use('/api/waitlist', waitlistRoutes);
 // Basic health check route
 app.get('/api/health', (req, res) => {

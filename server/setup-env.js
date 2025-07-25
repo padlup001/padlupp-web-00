@@ -1,21 +1,31 @@
-import { writeFile } from 'fs/promises';
+import { writeFileSync } from 'fs';
+import { join } from 'path';
 import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
+import { dirname } from 'path';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const envContent = `PORT=3000
+// Development environment
+const devEnv = `# Development Environment Variables
 NODE_ENV=development
-MONGODB_URI=mongodb://127.0.0.1:27017/padlupp_dev
-JWT_SECRET=dev-secret-key
-CLIENT_URL=http://localhost:5173`;
+PORT=3000
+CLIENT_URL=http://localhost:5173
+MONGODB_URI=mongodb://localhost:27017/padlupp-dev
+`;
 
-const filePath = join(__dirname, '.env.development');
+// Production environment
+const prodEnv = `# Production Environment Variables
+NODE_ENV=production
+PORT=4173
+CLIENT_URL=http://localhost:4173
+MONGODB_URI=mongodb://localhost:27017/padlupp-prod
+`;
 
-try {
-  await writeFile(filePath, envContent);
-  console.log('Successfully created .env.development file');
-} catch (error) {
-  console.error('Error creating .env.development file:', error);
-} 
+// Write environment files
+writeFileSync(join(__dirname, '.env.development'), devEnv);
+writeFileSync(join(__dirname, '.env.production'), prodEnv);
+
+console.log('Environment files created successfully!');
+console.log('- .env.development (PORT: 3000)');
+console.log('- .env.production (PORT: 4173)'); 
