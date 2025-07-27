@@ -5,9 +5,14 @@ import axios from "axios";
 
 import { ArrowRight } from "lucide-react";
 
-// Configure axios defaults
-axios.defaults.baseURL =
-  import.meta.env.VITE_API_URL || "http://localhost:3000";
+// Configure axios defaults - use proxy in development, relative URLs in production
+if (import.meta.env.DEV) {
+  // In development, use relative URLs to leverage Vite's proxy
+  axios.defaults.baseURL = "";
+} else {
+  // In production, use the full URL since we're serving from the same server
+  axios.defaults.baseURL = "";
+}
 
 interface WaitlistFormProps {
   onSubmit: (email: string) => void;
