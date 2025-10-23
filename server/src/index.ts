@@ -34,6 +34,11 @@ app.use(express.urlencoded({ extended: true }));
 // Routes
 app.use('/api/waitlist', waitlistRoutes);
 
+// Redirect /users/csv to the waitlist CSV endpoint
+app.get('/users/csv', (req, res) => {
+  res.redirect('/api/waitlist/csv');
+});
+
 // Basic health check route
 app.get('/api/health', (req, res) => {
   res.json({ 

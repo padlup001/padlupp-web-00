@@ -8,14 +8,27 @@ import frameImage from "../assets/images/logo.png";
 
 interface HeaderProps {
   hideNavigation?: boolean;
+  onContactClick?: (e?: React.MouseEvent) => void;
 }
 
-export const Header: FC<HeaderProps> = ({ hideNavigation = false }) => {
+export const Header: FC<HeaderProps> = ({
+  hideNavigation = false,
+  onContactClick,
+}) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const handleContact = (e?: React.MouseEvent) => {
+    if (onContactClick) {
+      e?.preventDefault();
+      onContactClick(e);
+    } else {
+      window.location.href = "mailto:hello@padlupp.com";
+    }
+  };
 
   return (
     <header className="bg-white shadow-sm sticky top-0 z-50">
-      <div className="max-w-6xl mx-auto px-4 py-4">
+      <div className="max-w-4xl mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-8">
             <Link href="/" className="flex items-center">
@@ -29,7 +42,7 @@ export const Header: FC<HeaderProps> = ({ hideNavigation = false }) => {
             </Link>
             {!hideNavigation && (
               <nav className="hidden md:flex space-x-6">
-                <a href="" className="text-gray-600 hover:text-gray-900">
+                <a href="#hero" className="text-gray-600 hover:text-gray-900">
                   Home
                 </a>
                 <a
@@ -49,9 +62,7 @@ export const Header: FC<HeaderProps> = ({ hideNavigation = false }) => {
             <Button
               variant="outline"
               className="hidden md:inline-flex border-blue-500 text-blue-600 hover:bg-blue-50"
-              onClick={() =>
-                (window.location.href = "mailto:hello@padlupp.com")
-              }
+              onClick={handleContact}
             >
               Contact us
             </Button>
@@ -88,8 +99,12 @@ export const Header: FC<HeaderProps> = ({ hideNavigation = false }) => {
                 Tools
               </a>
               <a
-                href="mailto:hello@padlupp.com"
+                href="#footer"
                 className="text-blue-600 hover:text-blue-700 px-2 py-1"
+                onClick={(e) => {
+                  handleContact(e);
+                  setIsMobileMenuOpen(false);
+                }}
               >
                 Contact us
               </a>

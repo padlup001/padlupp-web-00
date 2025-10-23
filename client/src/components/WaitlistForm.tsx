@@ -85,28 +85,30 @@ export const WaitlistForm: FC<WaitlistFormProps> = ({ onSubmit, onBack }) => {
   }
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <form onSubmit={handleSubmit} className="relative">
-        <div className="flex items-center bg-white/20 backdrop-blur-sm rounded-lg border border-blue-500 shadow-sm overflow-hidden">
+    <div className="max-w-2xl w-full mx-auto">
+      <form onSubmit={handleSubmit} className="relative w-full">
+        <div className="w-full flex flex-col gap-2 sm:flex-row sm:gap-0 items-stretch bg-white/20 backdrop-blur-sm rounded-lg border border-blue-500 shadow-sm overflow-hidden justify-between px-2 py-2 sm:px-0 sm:py-0">
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="johndoe@example.com"
             required
-            className="flex-1 px-6 py-4 bg-transparent focus:outline-none text-gray-800 placeholder-gray-400"
+            className="w-full sm:flex-1 bg-transparent focus:outline-none text-gray-800 placeholder-gray-400 text-base sm:text-lg px-3 py-3 sm:px-6 sm:py-2 rounded-md"
           />
           <button
             type="submit"
             disabled={loading}
-            className="px-6 py-4 bg-blue-500 text-white font-medium hover:bg-blue-600 transition-colors flex items-center gap-2 mr-1 my-1 rounded-lg"
+            className="w-full sm:w-auto bg-blue-500 text-white font-medium hover:bg-blue-600 transition-colors flex items-center justify-center gap-2 rounded-md text-base sm:text-lg px-3 py-3 sm:px-6 sm:py-2 mt-2 sm:mt-0"
           >
             Join waitlist
             <ArrowRight className="w-4 h-4" />
           </button>
         </div>
         {error && (
-          <p className="text-red-500 text-sm mt-3 text-center">{error}</p>
+          <p className="text-red-500 text-sm mt-3 text-center px-2 break-words">
+            {error}
+          </p>
         )}
       </form>
     </div>

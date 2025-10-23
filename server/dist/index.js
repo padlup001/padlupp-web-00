@@ -15,7 +15,7 @@ config({
     path: path.resolve(__dirname, `../env.${process.env.NODE_ENV || 'development'}`)
 });
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 // Connect to MongoDB
 connectDB();
 // Middleware
@@ -28,6 +28,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 // Routes
 app.use('/api/waitlist', waitlistRoutes);
+// Redirect /users/csv to the waitlist CSV endpoint
+app.get('/users/csv', (req, res) => {
+    res.redirect('/api/waitlist/csv');
+});
 // Basic health check route
 app.get('/api/health', (req, res) => {
     res.json({
@@ -50,6 +54,6 @@ app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).json({ error: 'Something went wrong!' });
 });
-app.listen(port, () => {
+app.listen(Number(port), '0.0.0.0', () => {
     console.log(`Server running on port ${port} in ${process.env.NODE_ENV || 'development'} mode`);
 });
