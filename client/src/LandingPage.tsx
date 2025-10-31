@@ -28,6 +28,8 @@ export const LandingPage: FC = () => {
     []
   );
   const footerRef = useRef<HTMLDivElement>(null);
+  // Move this here so it's at the top level and always called
+  const testimonialRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   // Move this here, top level (not inside if/blocks)
   const handleScrollToFooter = () => {
@@ -68,6 +70,13 @@ export const LandingPage: FC = () => {
         "I procrastinate a lot and struggle to meet up certain goals I set within a supposed timeline.",
       name: "Hellena John",
       role: "Psychology Student",
+    },
+    {
+      text: "Padlupp helped me find collaborators for my research project and kept me motivated throughout the journey. The platform's reminders and insights are truly valuable.",
+      shortText:
+        "Padlupp helped me find collaborators for my research project and kept me motivated.",
+      name: "Chris Mensah",
+      role: "Research Lead",
     },
   ];
 
@@ -349,37 +358,52 @@ export const LandingPage: FC = () => {
             </div>
           </div>
 
-          <div className="flex space-x-4 overflow-x-auto pb-4">
-            {testimonialsContent.map((testimonial, index) => (
-              <div
-                key={index}
-                className={`flex-shrink-0 w-72 bg-white rounded-2xl shadow-lg p-6 transition-all duration-300 cursor-pointer ${
-                  index === currentTestimonialCardIndex
-                    ? "ring-2 ring-blue-500"
-                    : ""
-                }`}
-                onClick={() => toggleTestimonialExpansion(index)}
-              >
-                <p className="text-gray-600 text-sm leading-relaxed mb-4">
-                  "
-                  {expandedTestimonials.includes(index)
-                    ? testimonial.text
-                    : testimonial.shortText}
-                  "
-                </p>
-                {!expandedTestimonials.includes(index) && (
-                  <p className="text-blue-600 text-xs mb-4">
-                    Tap to read more...
+          {/* Mobile: show 3 carousel cards, center highlighted, use same circular logic as desktop */}
+          <div className="flex space-x-4 overflow-x-auto pb-4 pt-4 justify-center items-center">
+            {getCircularMobileTestimonials(
+              currentTestimonialCardIndex,
+              testimonialsContent,
+              3
+            ).map((testimonial, idx) => {
+              const highlight = idx === 1; // middle card
+              const tIdx = testimonial._tIdx;
+              return (
+                <div
+                  key={tIdx}
+                  ref={(el) => {
+                    testimonialRefs.current[tIdx] = el;
+                  }}
+                  className={`flex-shrink-0 w-72 bg-white rounded-2xl shadow-lg p-6 transition-all duration-300 cursor-pointer border-2 ${
+                    highlight ? "border-blue-500" : "border-gray-300"
+                  }`}
+                  style={{
+                    zIndex: highlight ? 10 : 1,
+                    scale: highlight ? 1.06 : 1,
+                    boxSizing: "border-box",
+                  }}
+                  onClick={() => toggleTestimonialExpansion(tIdx)}
+                >
+                  <p className="text-gray-600 text-sm leading-relaxed mb-4">
+                    "
+                    {expandedTestimonials.includes(tIdx)
+                      ? testimonial.text
+                      : testimonial.shortText}
+                    "
                   </p>
-                )}
-                <div>
-                  <h3 className="font-semibold text-gray-900">
-                    {testimonial.name}
-                  </h3>
-                  <p className="text-xs text-gray-500">{testimonial.role}</p>
+                  {!expandedTestimonials.includes(tIdx) && (
+                    <p className="text-blue-600 text-xs mb-4">
+                      Tap to read more...
+                    </p>
+                  )}
+                  <div>
+                    <h3 className="font-semibold text-gray-900">
+                      {testimonial.name}
+                    </h3>
+                    <p className="text-xs text-gray-500">{testimonial.role}</p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Mobile Dots indicator */}
@@ -449,6 +473,34 @@ export const LandingPage: FC = () => {
   }
 
   // Desktop version
+  // Helper: circular slice for testimonials
+  function getCircularTestimonials(centerIdx: number, list: any[], amount = 3) {
+    const len = list.length;
+    if (len <= amount) return list.map((v, i) => ({ ...v, _tIdx: i })); // only highlight
+    let indices = [
+      (centerIdx - 1 + len) % len,
+      centerIdx,
+      (centerIdx + 1) % len,
+    ];
+    return indices.map((i) => ({ ...list[i], _tIdx: i }));
+  }
+
+  // Mobile: show 3 carousel cards, center highlighted, use same circular logic as desktop
+  function getCircularMobileTestimonials(
+    centerIdx: number,
+    list: any[],
+    amount = 3
+  ) {
+    const len = list.length;
+    if (len <= amount) return list.map((v, i) => ({ ...v, _tIdx: i }));
+    let indices = [
+      (centerIdx - 1 + len) % len,
+      centerIdx,
+      (centerIdx + 1) % len,
+    ];
+    return indices.map((i) => ({ ...list[i], _tIdx: i }));
+  }
+
   return (
     <div className="min-h-screen bg-white">
       <Header hideNavigation={false} onContactClick={handleScrollToFooter} />
@@ -639,45 +691,60 @@ export const LandingPage: FC = () => {
           </div>
         </div>
 
-        <div className="flex space-x-6 overflow-x-auto pb-4">
-          {testimonialsContent.map((testimonial, index) => (
-            <div key={index} className="flex-shrink-0 w-80">
-              {/* Clean card design */}
+        <div className="flex space-x-6 overflow-x-auto pb-4 pt-2 justify-center items-center">
+          {getCircularTestimonials(
+            currentTestimonialCardIndex,
+            testimonialsContent,
+            3
+          ).map((testimonial, idx) => {
+            const highlight = idx === 1; // the middle
+            const tIdx = testimonial._tIdx;
+            return (
               <div
-                className={`w-full bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden border border-gray-100 cursor-pointer ${
-                  expandedTestimonials.includes(index) ? "h-auto" : "h-auto"
+                key={tIdx}
+                className={`flex-shrink-0 w-80 rounded-2xl bg-white shadow-lg transition-all duration-300 relative overflow-hidden border-2 ${
+                  highlight
+                    ? "border-blue-500 scale-105 z-10"
+                    : "border-gray-300 opacity-75"
                 }`}
-                onClick={() => toggleTestimonialExpansion(index)}
+                style={{
+                  transition: "all 0.33s",
+                }}
+                onClick={() => toggleTestimonialExpansion(tIdx)}
               >
-                {/* Card content */}
-                <div className="p-8 flex flex-col">
-                  {/* Testimonial text */}
-                  <div className="mb-6">
-                    <p className="text-gray-600 text-base leading-relaxed">
-                      "
-                      {expandedTestimonials.includes(index)
-                        ? testimonial.text
-                        : testimonial.shortText}
-                      "
-                    </p>
-                    {!expandedTestimonials.includes(index) && (
-                      <p className="text-blue-600 text-sm mt-2">
-                        Click to read more...
+                <div
+                  className={`w-full bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden border border-gray-100 cursor-pointer ${
+                    expandedTestimonials.includes(tIdx) ? "h-auto" : "h-auto"
+                  }`}
+                >
+                  <div className="p-8 flex flex-col">
+                    <div className="mb-6">
+                      <p className="text-gray-600 text-base leading-relaxed">
+                        "
+                        {expandedTestimonials.includes(tIdx)
+                          ? testimonial.text
+                          : testimonial.shortText}
+                        "
                       </p>
-                    )}
-                  </div>
-
-                  {/* Name and role */}
-                  <div className="mt-auto">
-                    <h3 className="font-semibold text-gray-900 text-lg">
-                      {testimonial.name}
-                    </h3>
-                    <p className="text-sm text-gray-500">{testimonial.role}</p>
+                      {!expandedTestimonials.includes(tIdx) && (
+                        <p className="text-blue-600 text-sm mt-2">
+                          Click to read more...
+                        </p>
+                      )}
+                    </div>
+                    <div className="mt-auto">
+                      <h3 className="font-semibold text-gray-900 text-lg">
+                        {testimonial.name}
+                      </h3>
+                      <p className="text-sm text-gray-500">
+                        {testimonial.role}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Dots indicator */}

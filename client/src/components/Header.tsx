@@ -59,13 +59,13 @@ export const Header: FC<HeaderProps> = ({
           </div>
 
           <div className="flex items-center space-x-4">
-            <Button
+            {/* <Button
               variant="outline"
               className="hidden md:inline-flex border-blue-500 text-blue-600 hover:bg-blue-50"
               onClick={handleContact}
             >
               Contact us
-            </Button>
+            </Button> */}
             {!hideNavigation && (
               <button
                 className="md:hidden p-2 rounded-lg hover:bg-gray-100"
