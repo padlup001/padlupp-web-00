@@ -1,6 +1,5 @@
 import type { FC } from "react";
 import { useState } from "react";
-import { Button } from "./Button";
 import { Image } from "./Image";
 import { Link } from "./Link";
 import { Menu, X } from "lucide-react";

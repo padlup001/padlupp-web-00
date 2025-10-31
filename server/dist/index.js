@@ -15,7 +15,7 @@ config({
     path: path.resolve(__dirname, `../env.${process.env.NODE_ENV || 'development'}`)
 });
 const app = express();
-const port = process.env.PORT || 3000;
+const port = 3000;
 // Connect to MongoDB
 connectDB();
 // Middleware
@@ -54,6 +54,6 @@ app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).json({ error: 'Something went wrong!' });
 });
-app.listen(Number(port), '0.0.0.0', () => {
+app.listen(port, () => {
     console.log(`Server running on port ${port} in ${process.env.NODE_ENV || 'development'} mode`);
 });
