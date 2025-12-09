@@ -1,11 +1,11 @@
-import type { FC } from "react";
+import type { FC, CSSProperties } from "react";
 import { useState, useEffect, useRef } from "react";
 import { Button } from "./components/Button";
 
 import { Image } from "./components/Image";
 import { Header } from "./components/Header";
 import { Footer } from "./components/Footer";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronUp } from "lucide-react";
 import { WaitlistForm } from "./components/WaitlistForm";
 //import { ExpandableCard } from "./components/ExpandableCard";
 //import whyImage from "./assets/images/why.png";
@@ -15,6 +15,16 @@ import cardLeftImage from "./assets/images/card_left.png";
 import cardRightImage from "./assets/images/card_right.png";
 import underlineImage from "./assets/images/underline.png";
 import rightBlobImage from "./assets/images/right_blob.png";
+import astronautImage from "./assets/images/astronaut.png";
+import cloudImage from "./assets/images/cloud.png";
+import goalImage from "./assets/images/goal.png";
+import logoImage from "./assets/images/logo.png";
+import { motion, AnimatePresence } from "framer-motion";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+gsap.registerPlugin(ScrollTrigger);
+
+// Removed legacy FlipUnit in favor of CountdownGrid
 // import blobGroupImage from "./assets/images/Blob Group.png";
 // import blobGroup1Image from "./assets/images/Blob Group-1.png";
 // import macbookImage from "./assets/images/MacBook Pro 14_ - 12.png";
@@ -27,9 +37,25 @@ export const LandingPage: FC = () => {
   const [expandedTestimonials, setExpandedTestimonials] = useState<number[]>(
     []
   );
+  const [daysLeft, setDaysLeft] = useState(0);
+  const [hoursLeft, setHoursLeft] = useState(0);
+  const [minutesLeft, setMinutesLeft] = useState(0);
+  const [secondsLeft, setSecondsLeft] = useState(0);
+  const [showSuccessOverlay, setShowSuccessOverlay] = useState(false);
+  const confettiCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const pageRef = useRef<HTMLDivElement | null>(null);
+  const reduceMotion = useRef<boolean>(false);
   const footerRef = useRef<HTMLDivElement>(null);
   // Move this here so it's at the top level and always called
   const testimonialRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const testimonialContainerDesktopRef = useRef<HTMLDivElement | null>(null);
+  const testimonialContainerMobileRef = useRef<HTMLDivElement | null>(null);
+  const autoScrollIntervalRef = useRef<number | null>(null);
+  const startTimeoutRef = useRef<number | null>(null);
+  const resumeTimeoutRef = useRef<number | null>(null);
+  const pausedRef = useRef(false);
+  const nextYear = new Date().getUTCFullYear() + 1;
+  const launchTarget = useRef<Date>(new Date(Date.UTC(nextYear, 0, 1, 0, 0, 0)));
 
   // Move this here, top level (not inside if/blocks)
   const handleScrollToFooter = () => {
@@ -48,6 +74,163 @@ export const LandingPage: FC = () => {
     window.addEventListener("resize", checkMobile);
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
+
+  useEffect(() => {
+    const updateCountdown = () => {
+      const now = new Date().getTime();
+      const target = launchTarget.current.getTime();
+      const diff = Math.max(0, target - now);
+      const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const s = Math.floor((diff % (1000 * 60)) / 1000);
+      setDaysLeft(d);
+      setHoursLeft(h);
+      setMinutesLeft(m);
+      setSecondsLeft(s);
+    };
+    updateCountdown();
+    const id = window.setInterval(updateCountdown, 1000);
+    return () => window.clearInterval(id);
+  }, []);
+
+  const MotionNumber: FC<{ value: number; label: string }> = ({ value, label }) => (
+    <AnimatePresence mode="popLayout" initial={false}>
+      <motion.span
+        key={value}
+        className="inline-block"
+        initial={{ opacity: 0, y: -6 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 6 }}
+        transition={{ duration: 0.22, ease: "easeOut" }}
+        aria-live="polite"
+        aria-label={label}
+      >
+        {value}
+      </motion.span>
+    </AnimatePresence>
+  );
+
+  const CountdownGrid: FC<{ days: number; hours: number; minutes: number; seconds: number }> = ({ days, hours, minutes, seconds }) => {
+    const box = "bg-gradient-to-b from-[#4E92F4] to-[#7938BE] text-white rounded-2xl shadow-[0_10px_20px_rgba(73,110,200,0.25)] ring-1 ring-white/10";
+    const unit = (val: number, label: string) => (
+      <div className={`flex flex-col items-center justify-center px-4 py-3 ${box}`}>
+        <span className="countdown font-mono text-4xl md:text-5xl leading-none">
+          {/* DaisyUI uses --value; we keep it for compatibility while animating content with Framer Motion */}
+          <span style={{ "--value": val } as CSSProperties}>
+            <MotionNumber value={val} label={label} />
+          </span>
+        </span>
+        <span className="mt-1 text-xs md:text-sm tracking-widest opacity-90">{label.toUpperCase()}</span>
+      </div>
+    );
+    return (
+      <div className="grid grid-flow-col gap-3 md:gap-5 text-center auto-cols-max">
+        {unit(days, "days")}
+        {unit(hours, "hours")}
+        {unit(minutes, "min")}
+        {unit(seconds, "sec")}
+      </div>
+    );
+  };
+
+  useEffect(() => {
+    reduceMotion.current = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduceMotion.current) return;
+    const ctx = gsap.context(() => {
+      gsap.utils.toArray<HTMLElement>('.reveal-section').forEach((el) => {
+        gsap.from(el, {
+          opacity: 0,
+          y: 30,
+          duration: 0.6,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: el,
+            start: 'top 80%',
+            toggleActions: 'play none none reverse'
+          }
+        });
+      });
+    }, pageRef);
+    return () => ctx.revert();
+  }, []);
+
+  useEffect(() => {
+    if (reduceMotion.current) return;
+    const ctx = gsap.context(() => {
+      gsap.to('.astronaut-float', {
+        y: 8,
+        rotate: 0.5,
+        duration: 2.5,
+        ease: 'sine.inOut',
+        yoyo: true,
+        repeat: -1,
+      });
+    }, pageRef);
+    return () => ctx.revert();
+  }, []);
+
+  useEffect(() => {
+    const onSubscribed = () => {
+      setShowSuccessOverlay(true);
+    };
+    window.addEventListener("waitlist:subscribed", onSubscribed as EventListener);
+    return () => window.removeEventListener("waitlist:subscribed", onSubscribed as EventListener);
+  }, []);
+
+  useEffect(() => {
+    if (!showSuccessOverlay) return;
+    const canvas = confettiCanvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    const w = (canvas.width = window.innerWidth);
+    const h = (canvas.height = window.innerHeight);
+    const colors = ["#4E92F4", "#7938BE", "#8FB8FF", "#FFFFFF"];
+    const particles: { x: number; y: number; vx: number; vy: number; size: number; color: string; life: number }[] = [];
+    for (let i = 0; i < 140; i++) {
+      particles.push({
+        x: Math.random() * w,
+        y: -20 - Math.random() * 100,
+        vx: (Math.random() - 0.5) * 2,
+        vy: 2 + Math.random() * 3,
+        size: 4 + Math.random() * 6,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        life: 180 + Math.random() * 120,
+      });
+    }
+    let raf: number | null = null;
+    const step = () => {
+      ctx.clearRect(0, 0, w, h);
+      particles.forEach((p) => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.03;
+        p.life -= 1;
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.moveTo(p.x, p.y);
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      if (particles.some((p) => p.life > 0 && p.y < h + 20)) raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    const onResize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    window.addEventListener("resize", onResize);
+    const timeout = window.setTimeout(() => {
+      setShowSuccessOverlay(false);
+    }, 3500);
+    return () => {
+      if (raf) cancelAnimationFrame(raf);
+      window.removeEventListener("resize", onResize);
+      window.clearTimeout(timeout);
+      ctx.clearRect(0, 0, w, h);
+    };
+  }, [showSuccessOverlay]);
 
   const testimonialsContent = [
     {
@@ -92,8 +275,55 @@ export const LandingPage: FC = () => {
     );
   };
 
+  const startAutoScroll = () => {
+    if (autoScrollIntervalRef.current) return;
+    autoScrollIntervalRef.current = window.setInterval(() => {
+      if (pausedRef.current) return;
+      setCurrentTestimonialCardIndex((prev) => (prev + 1) % testimonialsContent.length);
+    }, 2500);
+  };
+
+  useEffect(() => {
+    startTimeoutRef.current = window.setTimeout(() => {
+      if (!pausedRef.current) startAutoScroll();
+    }, 3000);
+    return () => {
+      if (startTimeoutRef.current) window.clearTimeout(startTimeoutRef.current);
+      if (autoScrollIntervalRef.current) window.clearInterval(autoScrollIntervalRef.current);
+      if (resumeTimeoutRef.current) window.clearTimeout(resumeTimeoutRef.current);
+    };
+  }, []);
+
+  const handleHoverStart = () => {
+    pausedRef.current = true;
+    if (autoScrollIntervalRef.current) {
+      window.clearInterval(autoScrollIntervalRef.current);
+      autoScrollIntervalRef.current = null;
+    }
+    if (startTimeoutRef.current) {
+      window.clearTimeout(startTimeoutRef.current);
+      startTimeoutRef.current = null;
+    }
+    if (resumeTimeoutRef.current) {
+      window.clearTimeout(resumeTimeoutRef.current);
+      resumeTimeoutRef.current = null;
+    }
+  };
+
+  const handleHoverEnd = () => {
+    pausedRef.current = false;
+    if (resumeTimeoutRef.current) window.clearTimeout(resumeTimeoutRef.current);
+    resumeTimeoutRef.current = window.setTimeout(() => {
+      startAutoScroll();
+    }, 3000);
+  };
+
   const handleJoinWaitlist = () => {
     setShowWaitlist(true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleScrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -111,6 +341,50 @@ export const LandingPage: FC = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#F5F8FF] via-[#F0F5FF] to-[#E8F0FF]">
         <Header hideNavigation onContactClick={handleScrollToFooter} />
+        <Button
+          aria-label="Back to top"
+          className="fixed bottom-4 right-4 z-50 bg-gradient-to-r from-[#4E92F4] to-[#7938BE] hover:from-[#4182E4] hover:to-[#6928AE] text-white px-4 py-2 rounded-full shadow-lg hover:shadow-xl"
+          onClick={handleScrollToTop}
+        >
+          <ChevronUp className="w-5 h-5" />
+        </Button>
+        <AnimatePresence>
+          {showSuccessOverlay && (
+            <motion.div role="dialog" aria-modal="true" className="fixed inset-0 z-[60] flex items-center justify-center"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <motion.div className="absolute inset-0 bg-black/30" onClick={() => setShowSuccessOverlay(false)}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+              />
+              <motion.div
+                className="relative z-[61] w-[571px] max-w-[90%] bg-white rounded-[12px] px-[32px] py-[24px] shadow-[0_16px_40px_rgba(0,0,0,0.18)]"
+                initial={{ opacity: 0, y: 12, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -8, scale: 0.98 }}
+                transition={{ type: 'spring', stiffness: 220, damping: 25 }}
+                tabIndex={-1}
+                onKeyDown={(e) => { if (e.key === 'Escape') setShowSuccessOverlay(false); }}
+              >
+                <div className="flex flex-col items-center text-center">
+                  <Image src={logoImage} alt="Padlupp"  className=" mb-[12px]" />
+                  <h3 className="text-[#0F172A] text-[22px] font-semibold mb-[8px]">You have been added to waitlist!</h3>
+                  <p className="text-[#475569] text-[16px] leading-[24px] mb-[16px]">
+                    Further updates will be shared with you via the email you registered with.
+                  </p>
+                  <Button onClick={() => setShowSuccessOverlay(false)} className="bg-gradient-to-r from-[#4E92F4] to-[#7938BE] text-white rounded-[10px] px-[18px] py-[10px]">
+                    Back to screen
+                  </Button>
+                </div>
+              </motion.div>
+              <canvas ref={confettiCanvasRef} className="absolute inset-0 z-[62] pointer-events-none" />
+            </motion.div>
+          )}
+        </AnimatePresence>
         <main className="max-w-4xl mx-auto px-4 py-12">
           <div className="text-center mb-10">
             <h1 className="text-4xl font-bold text-gray-900 mb-4">
@@ -166,7 +440,29 @@ export const LandingPage: FC = () => {
         >
           Contact Us
         </Button>
-        <Header hideNavigation={false} onContactClick={handleScrollToFooter} />
+        <Button
+          aria-label="Back to top"
+          className="fixed bottom-4 right-3 z-50 bg-gradient-to-r from-[#4E92F4] to-[#7938BE] hover:from-[#4182E4] hover:to-[#6928AE] text-white px-4 py-2 rounded-full shadow-lg hover:shadow-xl"
+          onClick={handleScrollToTop}
+        >
+          <ChevronUp className="w-5 h-5" />
+        </Button>
+        <Header onJoinWaitlistClick={handleJoinWaitlist} />
+
+        <section className="relative w-full px-4 pt-6 reveal-section">
+          <div className="flex flex-col items-center gap-6">
+            <div className="text-center">
+              <div className="text-sm font-semibold tracking-[0.25em] text-gray-600">PADLUPP</div>
+              <div className="text-xs text-gray-400">Webapp</div>
+              <h1 className="mt-2 text-4xl font-extrabold text-gray-900 leading-tight">Launch Day</h1>
+            </div>
+            <div className="flex items-end">
+              <CountdownGrid days={daysLeft} hours={hoursLeft} minutes={minutesLeft} seconds={secondsLeft} />
+            </div>
+          </div>
+          <Image src={astronautImage} alt="Astronaut" className="astronaut-float absolute left-3 -top-4 w-20 opacity-90" style={{ willChange: 'transform' }} />
+          <Image src={cloudImage} alt="Clouds" className="absolute left-0 bottom-[-24px] w-full opacity-60" />
+        </section>
 
         {/* Mobile Hero Section */}
         <section id="hero" className="w-full px-4 py-12 text-center">
@@ -332,6 +628,37 @@ export const LandingPage: FC = () => {
           </div>
         </section>
 
+        {/* Mobile Goal Promo Section */}
+        <section id="goal-promo" className="w-full px-4 py-10 reveal-section" aria-label="Goal highlight (mobile)">
+          <div className="space-y-6">
+            <div className="flex justify-center">
+              <Image
+                src={goalImage}
+                alt="Goal features preview"
+                width={400}
+                height={260}
+                loading="lazy"
+                decoding="async"
+                className="w-full max-w-[420px] h-auto object-contain"
+              />
+            </div>
+            <div className="text-center">
+              <h2 className="text-[32px] leading-[40px] font-extrabold text-[#0F172A]">
+                Your Goals. Your People. One Powerful Community <span className="text-blue-600">.</span>
+              </h2>
+              <p className="mt-3 text-[#475569] text-[16px] leading-[26px]">
+                Find the perfect accountability partner, track progress together, and stay motivated with seamless chat, calls, and video.
+              </p>
+              <Button
+                onClick={handleJoinWaitlist}
+                className="mt-5 bg-gradient-to-r from-[#4E92F4] to-[#7938BE] hover:from-[#4182E4] hover:to-[#6928AE] text-white px-5 py-3 rounded-[12px] shadow-lg hover:shadow-xl transition-all"
+              >
+                Join the Waitlist
+              </Button>
+            </div>
+          </div>
+        </section>
+
         {/* Mobile Testimonials Section */}
         <section className="w-full px-4 py-12">
           <div className="flex items-center justify-between mb-8">
@@ -358,8 +685,21 @@ export const LandingPage: FC = () => {
             </div>
           </div>
 
-          {/* Mobile: show 3 carousel cards, center highlighted, use same circular logic as desktop */}
-          <div className="flex space-x-4 overflow-x-auto pb-4 pt-4 justify-center items-center">
+          <div
+            ref={testimonialContainerMobileRef}
+            role="region"
+            aria-roledescription="carousel"
+            aria-label="Testimonials"
+            aria-live="polite"
+            tabIndex={0}
+            onMouseEnter={handleHoverStart}
+            onMouseLeave={handleHoverEnd}
+            onTouchStart={handleHoverStart}
+            onTouchEnd={handleHoverEnd}
+            onFocus={handleHoverStart}
+            onBlur={handleHoverEnd}
+            className="flex space-x-4 overflow-x-auto scroll-smooth snap-x snap-mandatory pb-4 pt-4 justify-center items-center"
+          >
             {getCircularMobileTestimonials(
               currentTestimonialCardIndex,
               testimonialsContent,
@@ -373,7 +713,7 @@ export const LandingPage: FC = () => {
                   ref={(el) => {
                     testimonialRefs.current[tIdx] = el;
                   }}
-                  className={`flex-shrink-0 w-72 bg-white rounded-2xl shadow-lg p-6 transition-all duration-300 cursor-pointer border-2 ${
+                  className={`flex-shrink-0 w-72 bg-white rounded-2xl shadow-lg p-6 transition-all duration-500 cursor-pointer border-2 snap-center ${
                     highlight ? "border-blue-500" : "border-gray-300"
                   }`}
                   style={{
@@ -501,12 +841,41 @@ export const LandingPage: FC = () => {
     return indices.map((i) => ({ ...list[i], _tIdx: i }));
   }
 
+
   return (
-    <div className="min-h-screen bg-white">
-      <Header hideNavigation={false} onContactClick={handleScrollToFooter} />
+    <div ref={pageRef} className="min-h-screen bg-white">
+      <Header onJoinWaitlistClick={handleJoinWaitlist} />
+      <Button
+        aria-label="Back to top"
+        className="fixed bottom-5 right-5 z-50 bg-gradient-to-r from-[#4E92F4] to-[#7938BE] hover:from-[#4182E4] hover:to-[#6928AE] text-white px-4 py-2 rounded-full shadow-lg hover:shadow-xl"
+        onClick={handleScrollToTop}
+      >
+        <ChevronUp className="w-5 h-5" />
+      </Button>
+
+      <section className="relative max-w-6xl mx-auto px-4 pt-8 md:pt-12 reveal-section">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-8 md:gap-12">
+          <div className="flex-1">
+            <div className="mb-2 text-sm font-semibold tracking-[0.25em] text-gray-600">PADLUPP</div>
+            <div className="mb-6 text-xs text-gray-400">Webapp</div>
+            <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: 'easeOut' }} className="text-5xl md:text-6xl font-extrabold text-gray-900 leading-tight">Launch<br/>Day</motion.h1>
+          </div>
+
+          <div className="flex-1">
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: 'easeOut', delay: 0.1 }} className="flex items-end">
+              <CountdownGrid days={daysLeft} hours={hoursLeft} minutes={minutesLeft} seconds={secondsLeft} />
+            </motion.div>
+          </div>
+        </div>
+
+        <div className="pointer-events-none">
+          <Image src={astronautImage} alt="Astronaut" className="astronaut-float absolute left-20 -top-2 w-24 md:w-32 opacity-90" style={{ willChange: 'transform' }} />
+          <Image src={cloudImage} alt="Clouds" className="absolute left-0 bottom-[-40px] w-full max-w-[900px] opacity-60" />
+        </div>
+      </section>
 
       {/* Hero Section */}
-      <section id="hero" className="max-w-4xl mx-auto px-4 py-16 text-center">
+      <section id="hero" className="max-w-4xl mx-auto px-4 py-16 text-center reveal-section">
         <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
           Big{" "}
           <span className="relative inline-block">
@@ -532,7 +901,7 @@ export const LandingPage: FC = () => {
       </section>
 
       {/* Why Padlupp Section */}
-      <section id="why-padlupp" className="max-w-4xl mx-auto px-4 py-16">
+      <section id="why-padlupp" className="max-w-4xl mx-auto px-4 py-16 reveal-section">
         <div className="flex items-center gap-12">
           {/* Left side - Text content */}
           <div className="flex-1">
@@ -616,7 +985,7 @@ export const LandingPage: FC = () => {
       </section>
 
       {/* Tools Section */}
-      <section id="tools" className="max-w-4xl mx-auto px-4 py-16">
+      <section id="tools" className="max-w-4xl mx-auto px-4 py-16 reveal-section">
         {/* Tools image section */}
         <div className="relative mt-16">
           <div className="bg-[rgba(255,255,255,0.6)] backdrop-blur-[10px] border border-[rgba(255,255,255,0.4)] rounded-3xl p-10 shadow-[0_16px_40px_rgba(0,0,0,0.08)]">
@@ -634,7 +1003,7 @@ export const LandingPage: FC = () => {
       </section>
 
       {/* Community Section */}
-      <section id="community" className="max-w-4xl mx-auto px-4 py-16">
+      <section id="community" className="max-w-4xl mx-auto px-4 py-16 reveal-section">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div className="relative">
             <Image
@@ -665,8 +1034,39 @@ export const LandingPage: FC = () => {
         </div>
       </section>
 
+      {/* Goal Promo Section */}
+      <section id="goal-promo" className="mx-auto px-4 py-[64px] max-w-[1152px] reveal-section" aria-label="Goal highlight">
+        <div className="grid md:grid-cols-2 items-center gap-[32px]">
+          <div className="flex justify-center md:justify-start">
+            <Image
+              src={goalImage}
+              alt="Goal features preview"
+              width={640}
+              height={420}
+              loading="lazy"
+              decoding="async"
+              className="w-full md:w-[640px] h-auto md:h-[420px] object-contain"
+            />
+          </div>
+          <div>
+            <h2 className="text-[#0F172A] font-extrabold text-[48px] leading-[56px] md:text-[56px] md:leading-[64px] tracking-[-0.5px]">
+              Your Goals. Your People. One Powerful Community <span className="text-blue-600">.</span>
+            </h2>
+            <p className="mt-[16px] text-[#475569] text-[18px] leading-[28px] max-w-[560px]">
+              Find the perfect accountability partner, track progress together, and stay motivated with seamless chat, calls, and video. Connect globally with like-minded individuals who push you toward success.
+            </p>
+            <Button
+              onClick={handleJoinWaitlist}
+              className="mt-[24px] bg-gradient-to-r from-[#4E92F4] to-[#7938BE] hover:from-[#4182E4] hover:to-[#6928AE] text-white px-[24px] py-[14px] rounded-[12px] shadow-lg hover:shadow-xl transition-all"
+            >
+              Join the Waitlist
+            </Button>
+          </div>
+        </div>
+      </section>
+
       {/* Testimonials Section */}
-      <section className="max-w-2xl mx-auto px-4 py-16">
+      <section className="max-w-2xl mx-auto px-4 py-16 reveal-section">
         <div className="flex items-center justify-between mb-12">
           <h2 className="text-3xl font-bold text-gray-900">
             What everyone says
@@ -690,8 +1090,21 @@ export const LandingPage: FC = () => {
             </Button>
           </div>
         </div>
-
-        <div className="flex space-x-6 overflow-x-auto pb-4 pt-2 justify-center items-center">
+        <div
+          ref={testimonialContainerDesktopRef}
+          role="region"
+          aria-roledescription="carousel"
+          aria-label="Testimonials"
+          aria-live="polite"
+          tabIndex={0}
+          onMouseEnter={handleHoverStart}
+          onMouseLeave={handleHoverEnd}
+          onTouchStart={handleHoverStart}
+          onTouchEnd={handleHoverEnd}
+          onFocus={handleHoverStart}
+          onBlur={handleHoverEnd}
+          className="flex space-x-6 overflow-x-hidden scroll-smooth snap-x snap-mandatory pb-4 pt-2 justify-center items-center"
+        >
           {getCircularTestimonials(
             currentTestimonialCardIndex,
             testimonialsContent,
@@ -700,36 +1113,43 @@ export const LandingPage: FC = () => {
             const highlight = idx === 1; // the middle
             const tIdx = testimonial._tIdx;
             return (
-              <div
+              <motion.div
                 key={tIdx}
-                className={`flex-shrink-0 w-80 rounded-2xl bg-white shadow-lg transition-all duration-300 relative overflow-hidden border-2 ${
+                ref={(el) => {
+                  testimonialRefs.current[tIdx] = el;
+                }}
+                className={`flex-shrink-0 w-80 rounded-2xl bg-white shadow-lg transition-all duration-500 relative overflow-hidden border-2 snap-center ${
                   highlight
                     ? "border-blue-500 scale-105 z-10"
                     : "border-gray-300 opacity-75"
                 }`}
                 style={{
-                  transition: "all 0.33s",
+                  transition: "all 0.5s",
                 }}
                 onClick={() => toggleTestimonialExpansion(tIdx)}
+                layout
+                whileHover={{ scale: 1.03 }}
+                transition={{ type: 'spring', stiffness: 260, damping: 24 }}
               >
-                <div
-                  className={`w-full bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden border border-gray-100 cursor-pointer ${
+                <motion.div
+                  className={`w-full bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-500 relative overflow-hidden border border-gray-100 cursor-pointer ${
                     expandedTestimonials.includes(tIdx) ? "h-auto" : "h-auto"
                   }`}
+                  layout
                 >
                   <div className="p-8 flex flex-col">
                     <div className="mb-6">
-                      <p className="text-gray-600 text-base leading-relaxed">
+                      <motion.p className="text-gray-600 text-base leading-relaxed" layout>
                         "
                         {expandedTestimonials.includes(tIdx)
                           ? testimonial.text
                           : testimonial.shortText}
                         "
-                      </p>
+                      </motion.p>
                       {!expandedTestimonials.includes(tIdx) && (
-                        <p className="text-blue-600 text-sm mt-2">
+                        <motion.p className="text-blue-600 text-sm mt-2" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                           Click to read more...
-                        </p>
+                        </motion.p>
                       )}
                     </div>
                     <div className="mt-auto">
@@ -741,8 +1161,8 @@ export const LandingPage: FC = () => {
                       </p>
                     </div>
                   </div>
-                </div>
-              </div>
+                </motion.div>
+              </motion.div>
             );
           })}
         </div>
@@ -764,7 +1184,7 @@ export const LandingPage: FC = () => {
       </section>
 
       {/* Join the Movement Section */}
-      <section className="relative max-w-4xl mx-auto py-24 overflow-hidden">
+      <section className="relative max-w-4xl mx-auto py-24 overflow-hidden reveal-section">
         <div className="absolute w-full inset-0 bg-gradient-to-b from-white to-blue-100"></div>
 
         <div className="relative w-full h-96">

@@ -1,4 +1,4 @@
-import type { FC } from "react";
+import type { FC, CSSProperties } from "react";
 
 interface ImageProps {
   src: string;
@@ -6,6 +6,9 @@ interface ImageProps {
   width?: number;
   height?: number;
   className?: string;
+  loading?: "lazy" | "eager";
+  decoding?: "async" | "sync" | "auto";
+  style?: CSSProperties;
 }
 
 export const Image: FC<ImageProps> = ({
@@ -14,6 +17,9 @@ export const Image: FC<ImageProps> = ({
   width,
   height,
   className = "",
+  loading,
+  decoding,
+  style,
 }) => {
   return (
     <img
@@ -22,6 +28,9 @@ export const Image: FC<ImageProps> = ({
       width={width}
       height={height}
       className={className}
+      loading={loading}
+      decoding={decoding}
+      style={style}
     />
   );
 };

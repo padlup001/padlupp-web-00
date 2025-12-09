@@ -5,10 +5,19 @@ const router = express.Router();
 
 router.post('/join', async (req, res) => {
   try {
-    const { email } = req.body;
+    const { name, age, sex, email, country } = req.body;
 
-    if (!email) {
-      return res.status(400).json({ error: 'Email is required' });
+    if (!name || !email || !country || typeof age === 'undefined' || !sex) {
+      return res.status(400).json({ error: 'All fields (name, age, sex, email, country) are required' });
+    }
+    const parsedAge = Number(age);
+    if (Number.isNaN(parsedAge) || parsedAge < 0 || parsedAge > 120) {
+      return res.status(400).json({ error: 'Age must be a valid number between 0 and 120' });
+    }
+    const sexValue = String(sex).toLowerCase();
+    const allowedSex = ['male', 'female', 'other', 'prefer_not_to_say'];
+    if (!allowedSex.includes(sexValue)) {
+      return res.status(400).json({ error: `Sex must be one of: ${allowedSex.join(', ')}` });
     }
 
     // Check if email already exists
@@ -18,13 +27,17 @@ router.post('/join', async (req, res) => {
     }
 
     // Create new waitlist entry
-    const waitlistEntry = new Waitlist({ email });
+    const waitlistEntry = new Waitlist({ name, age: parsedAge, sex: sexValue, email, country });
     await waitlistEntry.save();
 
     res.status(201).json({
       message: 'Successfully joined the waitlist',
       data: {
+        name: waitlistEntry.name,
+        age: waitlistEntry.age,
+        sex: waitlistEntry.sex,
         email: waitlistEntry.email,
+        country: waitlistEntry.country,
         createdAt: waitlistEntry.createdAt
       }
     });
@@ -52,14 +65,14 @@ router.get('/count', async (req, res) => {
 
 router.get('/csv', async (req, res) => {
   try {
-    // Get all waitlist entries with email and createdAt
-    const waitlistEntries = await Waitlist.find({}, 'email createdAt').sort({ createdAt: 1 });
+    // Get all waitlist entries with selected fields
+    const waitlistEntries = await Waitlist.find({}, 'name age sex email country createdAt').sort({ createdAt: 1 });
     
     // Create CSV content
-    const csvHeader = 'Email,Date Created\n';
+    const csvHeader = 'Name,Age,Sex,Email,Country,Date Created\n';
     const csvRows = waitlistEntries.map(entry => {
-      const date = new Date(entry.createdAt).toISOString().split('T')[0]; // Format as YYYY-MM-DD
-      return `"${entry.email}","${date}"`;
+      const date = new Date(entry.createdAt).toISOString().split('T')[0];
+      return `"${entry.name}","${entry.age}","${entry.sex}","${entry.email}","${entry.country}","${date}"`;
     }).join('\n');
     
     const csvContent = csvHeader + csvRows;
@@ -79,4 +92,4 @@ router.get('/csv', async (req, res) => {
   }
 });
 
-export default router; 
+export default router;
