@@ -137,19 +137,44 @@ export const LandingPage: FC = () => {
   useEffect(() => {
     reduceMotion.current = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (reduceMotion.current) return;
+
     const ctx = gsap.context(() => {
-      gsap.utils.toArray<HTMLElement>('.reveal-section').forEach((el) => {
-        gsap.from(el, {
-          opacity: 0,
-          y: 30,
-          duration: 0.6,
-          ease: 'power2.out',
-          scrollTrigger: {
-            trigger: el,
-            start: 'top 80%',
-            toggleActions: 'play none none reverse'
-          }
-        });
+      ScrollTrigger.matchMedia({
+        // Mobile optimization: earlier trigger, faster transition, less distance
+        "(max-width: 767px)": function() {
+          gsap.utils.toArray<HTMLElement>('.reveal-section').forEach((el) => {
+            gsap.set(el, { willChange: "opacity, transform" });
+            gsap.from(el, {
+              opacity: 0,
+              y: 20,
+              duration: 0.5,
+              ease: 'power2.out',
+              scrollTrigger: {
+                 trigger: el,
+                 start: 'top 150%',
+                 toggleActions: 'play none none none',
+                 once: true
+               }
+            });
+          });
+        },
+        // Desktop: standard animation
+        "(min-width: 768px)": function() {
+          gsap.utils.toArray<HTMLElement>('.reveal-section').forEach((el) => {
+            gsap.set(el, { willChange: "opacity, transform" });
+            gsap.from(el, {
+              opacity: 0,
+              y: 30,
+              duration: 0.6,
+              ease: 'power2.out',
+              scrollTrigger: {
+                trigger: el,
+                start: 'top 80%',
+                toggleActions: 'play none none reverse'
+              }
+            });
+          });
+        }
       });
     }, pageRef);
     return () => ctx.revert();
