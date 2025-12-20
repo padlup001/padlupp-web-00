@@ -55,7 +55,7 @@ export const LandingPage: FC = () => {
   const resumeTimeoutRef = useRef<number | null>(null);
   const pausedRef = useRef(false);
   const nextYear = new Date().getUTCFullYear() + 1;
-  const launchTarget = useRef<Date>(new Date(Date.UTC(nextYear, 0, 1, 0, 0, 0)));
+  const launchTarget = useRef<Date>(new Date(Date.UTC(nextYear, 1, 1, 0, 0, 0)));
 
   // Move this here, top level (not inside if/blocks)
   const handleScrollToFooter = () => {
@@ -138,12 +138,20 @@ export const LandingPage: FC = () => {
     reduceMotion.current = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (reduceMotion.current) return;
 
-    const ctx = gsap.context(() => {
-      ScrollTrigger.matchMedia({
-        // Mobile optimization: earlier trigger, faster transition, less distance
-        "(max-width: 767px)": function() {
-          gsap.utils.toArray<HTMLElement>('.reveal-section').forEach((el) => {
-            gsap.set(el, { willChange: "opacity, transform" });
+    const mm = gsap.matchMedia();
+
+    mm.add(
+      {
+        isMobile: "(max-width: 767px)",
+        isDesktop: "(min-width: 768px)",
+      },
+      (context) => {
+        const { isMobile } = context.conditions as { isMobile: boolean };
+        
+        gsap.utils.toArray<HTMLElement>('.reveal-section').forEach((el) => {
+          gsap.set(el, { willChange: "opacity, transform" });
+          
+          if (isMobile) {
             gsap.from(el, {
               opacity: 0,
               y: 20,
@@ -151,17 +159,12 @@ export const LandingPage: FC = () => {
               ease: 'power2.out',
               scrollTrigger: {
                  trigger: el,
-                 start: 'top 150%',
+                 start: 'top 110%', // Trigger slightly before it enters viewport
                  toggleActions: 'play none none none',
                  once: true
                }
             });
-          });
-        },
-        // Desktop: standard animation
-        "(min-width: 768px)": function() {
-          gsap.utils.toArray<HTMLElement>('.reveal-section').forEach((el) => {
-            gsap.set(el, { willChange: "opacity, transform" });
+          } else {
             gsap.from(el, {
               opacity: 0,
               y: 30,
@@ -173,11 +176,13 @@ export const LandingPage: FC = () => {
                 toggleActions: 'play none none reverse'
               }
             });
-          });
-        }
-      });
-    }, pageRef);
-    return () => ctx.revert();
+          }
+        });
+      },
+      pageRef
+    );
+
+    return () => mm.revert();
   }, []);
 
   useEffect(() => {
@@ -477,9 +482,7 @@ export const LandingPage: FC = () => {
         <section className="relative w-full px-4 pt-6 reveal-section">
           <div className="flex flex-col items-center gap-6">
             <div className="text-center">
-              <div className="text-sm font-semibold tracking-[0.25em] text-gray-600">PADLUPP</div>
-              <div className="text-xs text-gray-400">Webapp</div>
-              <h1 className="mt-2 text-4xl font-extrabold text-gray-900 leading-tight">Launch Day</h1>
+              <h1 className="mt-2 text-4xl font-extrabold text-gr ay-900 leading-tight">Launch Day</h1>
             </div>
             <div className="flex items-end">
               <CountdownGrid days={daysLeft} hours={hoursLeft} minutes={minutesLeft} seconds={secondsLeft} />
@@ -881,8 +884,8 @@ export const LandingPage: FC = () => {
       <section className="relative max-w-6xl mx-auto px-4 pt-8 md:pt-12 reveal-section">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-8 md:gap-12">
           <div className="flex-1">
-            <div className="mb-2 text-sm font-semibold tracking-[0.25em] text-gray-600">PADLUPP</div>
-            <div className="mb-6 text-xs text-gray-400">Webapp</div>
+            <div className="mb-2 text-sm font-semibold tracking-[0.25em] text-gray-600">{""}</div>
+            <div className="mb-6 text-xs text-gray-400">{""}</div>
             <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: 'easeOut' }} className="text-5xl md:text-6xl font-extrabold text-gray-900 leading-tight">Launch<br/>Day</motion.h1>
           </div>
 
@@ -900,7 +903,7 @@ export const LandingPage: FC = () => {
       </section>
 
       {/* Hero Section */}
-      <section id="hero" className="max-w-4xl mx-auto px-4 py-16 text-center reveal-section">
+      <section id="hero" className="max-w-7xl mx-auto px-4 py-16 text-center reveal-section">
         <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
           Big{" "}
           <span className="relative inline-block">
@@ -926,7 +929,7 @@ export const LandingPage: FC = () => {
       </section>
 
       {/* Why Padlupp Section */}
-      <section id="why-padlupp" className="max-w-4xl mx-auto px-4 py-16 reveal-section">
+      <section id="why-padlupp" className="max-w-7xl mx-auto px-4 py-16 reveal-section">
         <div className="flex items-center gap-12">
           {/* Left side - Text content */}
           <div className="flex-1">
@@ -1010,7 +1013,7 @@ export const LandingPage: FC = () => {
       </section>
 
       {/* Tools Section */}
-      <section id="tools" className="max-w-4xl mx-auto px-4 py-16 reveal-section">
+      <section id="tools" className="max-w-7xl mx-auto px-4 py-16 reveal-section">
         {/* Tools image section */}
         <div className="relative mt-16">
           <div className="bg-[rgba(255,255,255,0.6)] backdrop-blur-[10px] border border-[rgba(255,255,255,0.4)] rounded-3xl p-10 shadow-[0_16px_40px_rgba(0,0,0,0.08)]">
@@ -1028,7 +1031,7 @@ export const LandingPage: FC = () => {
       </section>
 
       {/* Community Section */}
-      <section id="community" className="max-w-4xl mx-auto px-4 py-16 reveal-section">
+      <section id="community" className="max-w-7xl mx-auto px-4 py-16 reveal-section">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div className="relative">
             <Image
@@ -1060,7 +1063,7 @@ export const LandingPage: FC = () => {
       </section>
 
       {/* Goal Promo Section */}
-      <section id="goal-promo" className="mx-auto px-4 py-[64px] max-w-[1152px] reveal-section" aria-label="Goal highlight">
+      <section id="goal-promo" className="mx-auto px-4 py-[64px] max-w-7xl reveal-section" aria-label="Goal highlight">
         <div className="grid md:grid-cols-2 items-center gap-[32px]">
           <div className="flex justify-center md:justify-start">
             <Image
@@ -1091,7 +1094,7 @@ export const LandingPage: FC = () => {
       </section>
 
       {/* Testimonials Section */}
-      <section className="max-w-2xl mx-auto px-4 py-16 reveal-section">
+      <section className="max-w-7xl mx-auto px-4 py-16 reveal-section">
         <div className="flex items-center justify-between mb-12">
           <h2 className="text-3xl font-bold text-gray-900">
             What everyone says
@@ -1209,7 +1212,7 @@ export const LandingPage: FC = () => {
       </section>
 
       {/* Join the Movement Section */}
-      <section className="relative max-w-4xl mx-auto py-24 overflow-hidden reveal-section">
+      <section className="relative max-w-7xl mx-auto py-24 overflow-hidden reveal-section">
         <div className="absolute w-full inset-0 bg-gradient-to-b from-white to-blue-100"></div>
 
         <div className="relative w-full h-96">
