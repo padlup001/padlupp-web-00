@@ -1,18 +1,38 @@
-import type { FC } from "react";
+import type { FC, FormEvent } from "react";
 import { useState } from "react";
 import type { AxiosError } from "axios";
 import axios from "axios";
 
 import { ArrowRight } from "lucide-react";
 
-// Configure axios defaults - use proxy in development, relative URLs in production
-if (import.meta.env.DEV) {
-  // In development, use relative URLs to leverage Vite's proxy
-  axios.defaults.baseURL = "";
-} else {
-  // In production, use the full URL since we're serving from the same server
-  axios.defaults.baseURL = "";
-}
+type WaitlistJoinRequest = {
+  email: string;
+  name: string;
+  age: number;
+  sex: string;
+  country: string;
+};
+
+type WaitlistJoinResponse = {
+  id: number;
+  email: string;
+  name: string;
+  age: number;
+  sex: string;
+  country: string;
+  created_at: string;
+  updated_at: string;
+};
+
+type ApiErrorResponse = {
+  detail?: string;
+};
+
+const API_BASE_URL =
+  (import.meta.env.VITE_API_URL as string | undefined) ??
+  "https://api.padlupp.com";
+
+const WAITLIST_JOIN_URL = `${API_BASE_URL.replace(/\/$/, "")}/api-v1/waitlist/join/`;
 
 interface WaitlistFormProps {
   onSubmit: (email: string) => void;
@@ -29,17 +49,33 @@ export const WaitlistForm: FC<WaitlistFormProps> = ({ onSubmit, onBack }) => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
+    const parsedAge = Number(age);
+    if (!Number.isFinite(parsedAge) || parsedAge < 0 || parsedAge > 120) {
+      setLoading(false);
+      setError("Please enter a valid age.");
+      return;
+    }
+
     try {
-      const response = await axios.post(
-        "/api/waitlist/join",
-        { name, age: Number(age), sex, email, country },
+      const payload: WaitlistJoinRequest = {
+        email,
+        name,
+        age: parsedAge,
+        sex,
+        country,
+      };
+
+      const response = await axios.post<WaitlistJoinResponse>(
+        WAITLIST_JOIN_URL,
+        payload,
         {
           headers: {
+            Accept: "application/json",
             "Content-Type": "application/json",
           },
         }
@@ -58,14 +94,13 @@ export const WaitlistForm: FC<WaitlistFormProps> = ({ onSubmit, onBack }) => {
       setEmail("");
     } catch (err) {
       console.error("Waitlist submission error:", err);
-      const error = err as AxiosError<{ error: string }>;
+      const axiosError = err as AxiosError<ApiErrorResponse>;
 
-      if (error.response?.data?.error) {
-        setError(error.response.data.error);
-      } else if (error.response?.status === 409) {
-        setError("This email is already registered.");
-      } else if (error.response?.status === 400) {
-        setError("Please enter a valid email address.");
+      const apiMessage = axiosError.response?.data?.detail;
+      if (apiMessage) {
+        setError(apiMessage);
+      } else if (axiosError.response?.status === 400) {
+        setError("Please check your details and try again.");
       } else {
         setError("An error occurred. Please try again.");
       }
