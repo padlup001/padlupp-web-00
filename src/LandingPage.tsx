@@ -57,7 +57,7 @@ export const LandingPage: FC = () => {
   const resumeTimeoutRef = useRef<number | null>(null);
   const pausedRef = useRef(false);
   const currentYear = new Date().getUTCFullYear();
-  const launchTarget = useRef<Date>(new Date(Date.UTC(currentYear, 1, 1, 0, 0, 0)));
+  const launchTarget = useRef<Date>(new Date(Date.UTC(currentYear, 2, 1, 0, 0, 0)));
 
   // Move this here, top level (not inside if/blocks)
   const handleScrollToFooter = () => {
