@@ -25,3 +25,12 @@ dist-ssr
 
 # env files
 env.production
+
+# Python virtual environments
+.venv/
+venv/
+env/
+ENV/
+padlupp/
+*/pyvenv.cfg
+.python-version

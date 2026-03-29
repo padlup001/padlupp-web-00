@@ -42,7 +42,7 @@ interface WaitlistFormProps {
 export const WaitlistForm: FC<WaitlistFormProps> = ({ onSubmit, onBack }) => {
   const [name, setName] = useState("");
   const [age, setAge] = useState<string>("");
-  const [sex, setSex] = useState("male");
+  const [sex, setSex] = useState("");
   const [country, setCountry] = useState("");
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
@@ -89,7 +89,7 @@ export const WaitlistForm: FC<WaitlistFormProps> = ({ onSubmit, onBack }) => {
       );
       setName("");
       setAge("");
-      setSex("male");
+      setSex("");
       setCountry("");
       setEmail("");
     } catch (err) {
@@ -113,11 +113,11 @@ export const WaitlistForm: FC<WaitlistFormProps> = ({ onSubmit, onBack }) => {
     const telegramLink = "https://t.me/+ijvNLk3ifQlmOTZk";
 
     return (
-      <div className="max-w-md mx-auto bg-white/100 rounded-lg p-8 text-center">
-        <h3 className="text-[32px] font-semibold text-gray-900 mb-4">
+      <div className="max-w-md mx-auto bg-white/100 rounded-lg p-6 sm:p-8 text-center">
+        <h3 className="text-2xl sm:text-[32px] font-semibold text-gray-900 mb-4">
           You have been added to waitlist!
         </h3>
-        <p className="text-gray-600 text-lg mb-8">
+        <p className="text-gray-600 text-base sm:text-lg mb-8">
           Further updates will be shared with you
           <br />
           via the email you registered with.
@@ -147,22 +147,20 @@ export const WaitlistForm: FC<WaitlistFormProps> = ({ onSubmit, onBack }) => {
 
   return (
     <div className="max-w-2xl w-full mx-auto">
-      <p className="text-center text-gray-700 mb-3 px-2">
-        kindly fill out the form so we can find you the right accountability partner
-      </p>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-gray-700">Name</label>
-            <input id="name" type="text" value={name} onChange={(e) => setName(e.target.value)} required className="mt-1 w-full bg-white/70 border border-blue-500 rounded-md px-3 py-2 focus:outline-none" />
+            <input id="name" type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Empress" required className="mt-1 w-full bg-white/70 border border-blue-500 rounded-md px-3 py-2 focus:outline-none" />
           </div>
           <div>
             <label htmlFor="age" className="block text-sm font-medium text-gray-700">Age</label>
-            <input id="age" type="number" min={0} max={120} value={age} onChange={(e) => setAge(e.target.value)} required className="mt-1 w-full bg-white/70 border border-blue-500 rounded-md px-3 py-2 focus:outline-none" />
+            <input id="age" type="number" min={0} max={120} value={age} onChange={(e) => setAge(e.target.value)} placeholder="18" required className="mt-1 w-full bg-white/70 border border-blue-500 rounded-md px-3 py-2 focus:outline-none" />
           </div>
           <div>
             <label htmlFor="sex" className="block text-sm font-medium text-gray-700">Sex</label>
             <select id="sex" value={sex} onChange={(e) => setSex(e.target.value)} required className="mt-1 w-full bg-white/70 border border-blue-500 rounded-md px-3 py-2 focus:outline-none">
+              <option value="" disabled>Select a Sex</option>
               <option value="male">Male</option>
               <option value="female">Female</option>
               <option value="other">Other</option>
@@ -211,7 +209,7 @@ export const WaitlistForm: FC<WaitlistFormProps> = ({ onSubmit, onBack }) => {
           </div>
         </div>
         <div className="w-full flex flex-col sm:flex-row items-stretch bg-white/20 backdrop-blur-sm rounded-lg border border-blue-500 shadow-sm overflow-hidden justify-between px-2 py-2 sm:px-0 sm:py-0">
-          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="johndoe@example.com" required className="w-full sm:flex-1 bg-transparent focus:outline-none text-gray-800 placeholder-gray-400 text-base sm:text-lg px-3 py-3 sm:px-6 sm:py-2 rounded-md" />
+          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Empress@padlupp.com" required className="w-full sm:flex-1 bg-transparent focus:outline-none text-gray-800 placeholder-gray-400 text-base sm:text-lg px-3 py-3 sm:px-6 sm:py-2 rounded-md" />
           <button type="submit" disabled={loading} className="w-full sm:w-auto bg-blue-500 text-white font-medium hover:bg-blue-600 transition-colors flex items-center justify-center gap-2 rounded-md text-base sm:text-lg px-3 py-3 sm:px-6 sm:py-2 mt-2 sm:mt-0">
             Join waitlist
             <ArrowRight className="w-4 h-4" />

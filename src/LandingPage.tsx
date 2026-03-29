@@ -56,8 +56,8 @@ export const LandingPage: FC = () => {
   const startTimeoutRef = useRef<number | null>(null);
   const resumeTimeoutRef = useRef<number | null>(null);
   const pausedRef = useRef(false);
-  const currentYear = new Date().getUTCFullYear();
-  const launchTarget = useRef<Date>(new Date(Date.UTC(currentYear, 2, 1, 0, 0, 0)));
+  const stopwatchStart = useRef<Date>(new Date("2026-03-01T00:00:00Z"));
+  const stopwatchStartLabel = "Started 1st of March 2026";
 
   // Move this here, top level (not inside if/blocks)
   const handleScrollToFooter = () => {
@@ -78,10 +78,10 @@ export const LandingPage: FC = () => {
   }, []);
 
   useEffect(() => {
-    const updateCountdown = () => {
+    const updateStopwatch = () => {
       const now = new Date().getTime();
-      const target = launchTarget.current.getTime();
-      const diff = Math.max(0, target - now);
+      const start = stopwatchStart.current.getTime();
+      const diff = Math.max(0, now - start);
       const d = Math.floor(diff / (1000 * 60 * 60 * 24));
       const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
       const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
@@ -91,8 +91,8 @@ export const LandingPage: FC = () => {
       setMinutesLeft(m);
       setSecondsLeft(s);
     };
-    updateCountdown();
-    const id = window.setInterval(updateCountdown, 1000);
+    updateStopwatch();
+    const id = window.setInterval(updateStopwatch, 1000);
     return () => window.clearInterval(id);
   }, []);
 
@@ -127,7 +127,7 @@ export const LandingPage: FC = () => {
       </div>
     );
     return (
-      <div className="grid grid-flow-col gap-3 md:gap-5 text-center auto-cols-max">
+      <div className="grid grid-cols-2 sm:grid-cols-none sm:grid-flow-col gap-3 md:gap-5 text-center auto-cols-max">
         {unit(days, "days")}
         {unit(hours, "hours")}
         {unit(minutes, "min")}
@@ -394,7 +394,7 @@ export const LandingPage: FC = () => {
                 transition={{ duration: 0.2 }}
               />
               <motion.div
-                className="relative z-[61] w-[571px] max-w-[90%] bg-white rounded-[12px] px-[32px] py-[24px] shadow-[0_16px_40px_rgba(0,0,0,0.18)]"
+                className="relative z-[61] w-full max-w-[571px] bg-white rounded-[12px] px-5 py-5 sm:px-8 sm:py-6 shadow-[0_16px_40px_rgba(0,0,0,0.18)]"
                 initial={{ opacity: 0, y: 12, scale: 0.98 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -8, scale: 0.98 }}
@@ -404,8 +404,8 @@ export const LandingPage: FC = () => {
               >
                 <div className="flex flex-col items-center text-center">
                   <Image src={logoImage} alt="Padlupp"  className=" mb-[12px]" />
-                  <h3 className="text-[#0F172A] text-[22px] font-semibold mb-[8px]">You have been added to waitlist!</h3>
-                  <p className="text-[#475569] text-[16px] leading-[24px] mb-[16px]">
+                  <h3 className="text-[#0F172A] text-xl sm:text-[22px] font-semibold mb-[8px]">You have been added to waitlist!</h3>
+                  <p className="text-[#475569] text-sm sm:text-[16px] leading-6 mb-[16px]">
                     Further updates will be shared with you via the email you registered with.
                   </p>
                   {telegramLink && (
@@ -432,14 +432,16 @@ export const LandingPage: FC = () => {
             </motion.div>
           )}
         </AnimatePresence>
-        <main className="max-w-4xl mx-auto px-4 py-12">
+        <main className="max-w-4xl mx-auto px-4 sm:px-6 py-10 sm:py-12">
           <div className="text-center mb-10">
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">
+            <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
               Your Goals. Your People. One Powerful Community.
             </h1>
-            <p className="text-xl text-gray-600 mb-6 max-w-2xl mx-auto">
-              Find the perfect accountability partner, track progress together,
-              and stay motivated with seamless chat, calls, and video.
+            <p className="text-base sm:text-lg text-gray-600 mb-6 max-w-2xl mx-auto">
+              We&apos;ve launched our MVP in a closed beta with early waitlist
+              users. We&apos;re building iteratively based on feedback before
+              opening the next phase. Join the waitlist to follow our progress
+              and be notified when we launch.
             </p>
           </div>
 
@@ -499,11 +501,12 @@ export const LandingPage: FC = () => {
         <section className="relative w-full px-4 pt-6 reveal-section">
           <div className="flex flex-col items-center gap-6">
             <div className="text-center">
-              <h1 className="mt-2 text-4xl font-extrabold text-gr ay-900 leading-tight">Launch Day</h1>
+              <h1 className="mt-2 text-4xl font-extrabold text-gray-900 leading-tight">Launch Day</h1>
             </div>
             <div className="flex items-end">
               <CountdownGrid days={daysLeft} hours={hoursLeft} minutes={minutesLeft} seconds={secondsLeft} />
             </div>
+            <p className="mt-2 text-sm text-gray-600">{stopwatchStartLabel}</p>
           </div>
           <Image src={astronautImage} alt="Astronaut" className="astronaut-float absolute left-3 -top-4 w-20 opacity-90" style={{ willChange: 'transform' }} />
           <Image src={cloudImage} alt="Clouds" className="absolute left-0 bottom-[-24px] w-full opacity-60" />
@@ -898,17 +901,18 @@ export const LandingPage: FC = () => {
         <ChevronUp className="w-5 h-5" />
       </Button>
 
-      <section className="relative max-w-6xl mx-auto px-4 pt-8 md:pt-12 reveal-section">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-8 md:gap-12">
+      <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 md:pt-10 lg:pt-12 reveal-section">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8 md:gap-10 lg:gap-12">
           <div className="flex-1">
             <div className="mb-2 text-sm font-semibold tracking-[0.25em] text-gray-600">{""}</div>
             <div className="mb-6 text-xs text-gray-400">{""}</div>
-            <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: 'easeOut' }} className="text-5xl md:text-6xl font-extrabold text-gray-900 leading-tight">Launch<br/>Day</motion.h1>
+            <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: 'easeOut' }} className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 leading-tight">Launch<br/>Day</motion.h1>
           </div>
 
           <div className="flex-1">
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: 'easeOut', delay: 0.1 }} className="flex items-end">
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: 'easeOut', delay: 0.1 }} className="flex flex-col items-center lg:items-start">
               <CountdownGrid days={daysLeft} hours={hoursLeft} minutes={minutesLeft} seconds={secondsLeft} />
+              <p className="mt-2 text-sm text-gray-600">{stopwatchStartLabel}</p>
             </motion.div>
           </div>
         </div>
@@ -946,8 +950,8 @@ export const LandingPage: FC = () => {
       </section>
 
       {/* Why Padlupp Section */}
-      <section id="why-padlupp" className="max-w-7xl mx-auto px-4 py-16 reveal-section">
-        <div className="flex items-center gap-12">
+      <section id="why-padlupp" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-16 reveal-section">
+        <div className="flex flex-col lg:flex-row items-start lg:items-center gap-10 lg:gap-12">
           {/* Left side - Text content */}
           <div className="flex-1">
             <h2 className="text-3xl font-bold text-gray-900 mb-8">
@@ -1030,10 +1034,10 @@ export const LandingPage: FC = () => {
       </section>
 
       {/* Tools Section */}
-      <section id="tools" className="max-w-7xl mx-auto px-4 py-16 reveal-section">
+      <section id="tools" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-16 reveal-section">
         {/* Tools image section */}
         <div className="relative mt-16">
-          <div className="bg-[rgba(255,255,255,0.6)] backdrop-blur-[10px] border border-[rgba(255,255,255,0.4)] rounded-3xl p-10 shadow-[0_16px_40px_rgba(0,0,0,0.08)]">
+          <div className="bg-[rgba(255,255,255,0.6)] backdrop-blur-[10px] border border-[rgba(255,255,255,0.4)] rounded-3xl p-5 sm:p-8 lg:p-10 shadow-[0_16px_40px_rgba(0,0,0,0.08)]">
             <div className="flex justify-center">
               <Image
                 src={toolsImage}
@@ -1048,8 +1052,8 @@ export const LandingPage: FC = () => {
       </section>
 
       {/* Community Section */}
-      <section id="community" className="max-w-7xl mx-auto px-4 py-16 reveal-section">
-        <div className="grid md:grid-cols-2 gap-12 items-center">
+      <section id="community" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-16 reveal-section">
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           <div className="relative">
             <Image
               src={communityImage}
@@ -1060,7 +1064,7 @@ export const LandingPage: FC = () => {
             />
           </div>
           <div>
-            <h2 className="text-4xl font-bold text-gray-900 mb-6">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
               Your Goals. Your People. One Powerful Community
               <span className="text-blue-600">.</span>
             </h2>
@@ -1080,8 +1084,8 @@ export const LandingPage: FC = () => {
       </section>
 
       {/* Goal Promo Section */}
-      <section id="goal-promo" className="mx-auto px-4 py-[64px] max-w-7xl reveal-section" aria-label="Goal highlight">
-        <div className="grid md:grid-cols-2 items-center gap-[32px]">
+      <section id="goal-promo" className="mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-16 max-w-7xl reveal-section" aria-label="Goal highlight">
+        <div className="grid lg:grid-cols-2 items-center gap-8 lg:gap-10">
           <div className="flex justify-center md:justify-start">
             <Image
               src={goalImage}
@@ -1090,19 +1094,22 @@ export const LandingPage: FC = () => {
               height={420}
               loading="lazy"
               decoding="async"
-              className="w-full md:w-[640px] h-auto md:h-[420px] object-contain"
+              className="w-full max-w-[640px] h-auto object-contain"
             />
           </div>
           <div>
-            <h2 className="text-[#0F172A] font-extrabold text-[48px] leading-[56px] md:text-[56px] md:leading-[64px] tracking-[-0.5px]">
+            <h2 className="text-[#0F172A] font-extrabold text-3xl sm:text-4xl lg:text-[56px] leading-tight lg:leading-[64px] tracking-[-0.5px]">
               Your Goals. Your People. One Powerful Community <span className="text-blue-600">.</span>
             </h2>
-            <p className="mt-[16px] text-[#475569] text-[18px] leading-[28px] max-w-[560px]">
-              Find the perfect accountability partner, track progress together, and stay motivated with seamless chat, calls, and video. Connect globally with like-minded individuals who push you toward success.
+            <p className="mt-4 text-[#475569] text-base sm:text-[18px] leading-7 max-w-[560px]">
+              We&apos;ve launched our MVP in a closed beta with early waitlist users.
+              We&apos;re building iteratively based on feedback before opening the
+              next phase. Join the waitlist to follow our progress and be
+              notified when we launch.
             </p>
             <Button
               onClick={handleJoinWaitlist}
-              className="mt-[24px] bg-gradient-to-r from-[#4E92F4] to-[#7938BE] hover:from-[#4182E4] hover:to-[#6928AE] text-white px-[24px] py-[14px] rounded-[12px] shadow-lg hover:shadow-xl transition-all"
+              className="mt-6 bg-gradient-to-r from-[#4E92F4] to-[#7938BE] hover:from-[#4182E4] hover:to-[#6928AE] text-white px-6 py-3.5 rounded-[12px] shadow-lg hover:shadow-xl transition-all"
             >
               Join the Waitlist
             </Button>
@@ -1111,8 +1118,8 @@ export const LandingPage: FC = () => {
       </section>
 
       {/* Testimonials Section */}
-      <section className="max-w-7xl mx-auto px-4 py-16 reveal-section">
-        <div className="flex items-center justify-between mb-12">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-16 reveal-section">
+        <div className="flex items-center justify-between mb-8 lg:mb-12">
           <h2 className="text-3xl font-bold text-gray-900">
             What everyone says
           </h2>
@@ -1148,7 +1155,7 @@ export const LandingPage: FC = () => {
           onTouchEnd={handleHoverEnd}
           onFocus={handleHoverStart}
           onBlur={handleHoverEnd}
-          className="flex space-x-6 overflow-x-hidden scroll-smooth snap-x snap-mandatory pb-4 pt-2 justify-center items-center"
+          className="flex gap-4 lg:gap-6 overflow-x-auto lg:overflow-x-hidden scroll-smooth snap-x snap-mandatory pb-4 pt-2 justify-start lg:justify-center items-center"
         >
           {getCircularTestimonials(
             currentTestimonialCardIndex,
@@ -1163,7 +1170,7 @@ export const LandingPage: FC = () => {
                 ref={(el) => {
                   testimonialRefs.current[tIdx] = el;
                 }}
-                className={`flex-shrink-0 w-80 rounded-2xl bg-white shadow-lg transition-all duration-500 relative overflow-hidden border-2 snap-center ${
+                className={`flex-shrink-0 w-[18rem] lg:w-80 rounded-2xl bg-white shadow-lg transition-all duration-500 relative overflow-hidden border-2 snap-center ${
                   highlight
                     ? "border-blue-500 scale-105 z-10"
                     : "border-gray-300 opacity-75"
@@ -1229,31 +1236,31 @@ export const LandingPage: FC = () => {
       </section>
 
       {/* Join the Movement Section */}
-      <section className="relative max-w-7xl mx-auto py-24 overflow-hidden reveal-section">
+      <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24 overflow-hidden reveal-section">
         <div className="absolute w-full inset-0 bg-gradient-to-b from-white to-blue-100"></div>
 
-        <div className="relative w-full h-96">
+        <div className="relative w-full min-h-[20rem] lg:h-96">
           {/* Left background image */}
           <div className="absolute left-0 top-0 w-1/2 h-full z-1">
             <Image
               src={cardLeftImage}
               alt="Avatar"
-              className="w-1/2 h-full object-cover object-left"
+              className="w-full h-full object-cover object-left"
             />
           </div>
 
           {/* Right background image */}
-          <div className="absolute right-10 w-1/2 top-0 translate-x-1/2 h-full z-1">
+          <div className="absolute right-0 w-1/2 top-0 h-full z-1">
             <Image
               src={cardRightImage}
               alt="Avatar"
-              className="w-1/2 h-full object-cover object-right"
+              className="w-full h-full object-cover object-right"
             />
           </div>
 
           {/* Center content overlay */}
           <div className="absolute inset-0 flex items-center justify-center z-2">
-            <div className="text-center px-8 max-w-2xl">
+            <div className="text-center px-4 sm:px-8 max-w-2xl">
               <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
                 Join the Movement
               </h2>
