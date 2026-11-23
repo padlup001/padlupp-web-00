@@ -13,6 +13,13 @@ beforeEach(() => {
     addEventListener: vi.fn(),
     removeEventListener: vi.fn(),
   })));
+  // jsdom has no IntersectionObserver; Framer Motion's scroll reveals need one.
+  vi.stubGlobal("IntersectionObserver", class {
+    observe = vi.fn();
+    unobserve = vi.fn();
+    disconnect = vi.fn();
+    takeRecords = vi.fn(() => []);
+  });
 });
 
 afterEach(() => {
