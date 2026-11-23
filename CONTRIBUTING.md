@@ -1,9 +1,13 @@
 # Contributing to the Padlupp landing page
 
 This repository is the **marketing landing page** served at
-`https://padlupp.com`. It is a single static page with the waitlist form,
-launch countdown and testimonials. Its *Sign in* and *Sign up* buttons link to
-the web app at `https://app.padlupp.com` (see `src/appLinks.ts`).
+`https://padlupp.com`. It is a single static page describing the product,
+with testimonials and links to social media. Its *Sign in* and *Sign up*
+buttons link to the web app at `https://app.padlupp.com` (see
+`src/appLinks.ts`).
+
+`src/LandingPage.tsx` has separate mobile and desktop layouts, so most content
+changes need making in both. Check changes at phone and desktop widths.
 
 | Part of the product | Lives at | Deploys |
 |---|---|---|
