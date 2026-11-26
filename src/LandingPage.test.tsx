@@ -84,3 +84,20 @@ describe("marketing app entry points", () => {
     }
   });
 });
+
+describe("campaign links", () => {
+  afterEach(() => window.history.replaceState(null, "", "/"));
+
+  it("passes a visitor's campaign tags on to every sign-up and sign-in link", () => {
+    window.history.replaceState(null, "", "/?utm_source=instagram&utm_campaign=launch&other=ignored");
+    render(<LandingPage />);
+    const links = screen.getAllByRole("link").filter((link) => link.getAttribute("href")?.startsWith("https://app.padlupp.com/"));
+    expect(links.length).toBe(7);
+    for (const link of links) {
+      const url = new URL(link.getAttribute("href")!);
+      expect(url.searchParams.get("utm_source")).toBe("instagram");
+      expect(url.searchParams.get("utm_campaign")).toBe("launch");
+      expect(url.searchParams.has("other")).toBe(false);
+    }
+  });
+});

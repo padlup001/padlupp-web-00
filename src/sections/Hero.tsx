@@ -9,7 +9,7 @@ import {
   useTransform,
 } from "framer-motion";
 import { ArrowRight, CheckCircle2, Sparkles, Target, Users, type LucideIcon } from "lucide-react";
-import { APP_SIGN_IN_URL, APP_SIGN_UP_URL } from "../appLinks";
+import { appLink, APP_SIGN_IN_URL, APP_SIGN_UP_URL } from "../appLinks";
 import { CtaLink } from "../components/CtaLink";
 import { CONTAINER, EASE, ScribbleUnderline } from "../components/motion";
 import { cn } from "../utils/cn";
@@ -139,11 +139,11 @@ export const Hero: FC = () => {
             transition={{ duration: 0.8, ease: EASE, delay: 0.75 }}
             className="mt-9 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-center lg:justify-start"
           >
-            <CtaLink href={APP_SIGN_UP_URL} size="lg">
+            <CtaLink href={appLink(APP_SIGN_UP_URL)} size="lg">
               Sign Up
               <ArrowRight className="size-5 transition-transform duration-300 group-hover:translate-x-1" aria-hidden="true" />
             </CtaLink>
-            <CtaLink href={APP_SIGN_IN_URL} size="lg" variant="secondary">
+            <CtaLink href={appLink(APP_SIGN_IN_URL)} size="lg" variant="secondary">
               Sign In
             </CtaLink>
           </motion.div>

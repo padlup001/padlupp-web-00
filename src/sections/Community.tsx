@@ -2,7 +2,7 @@ import type { FC } from "react";
 import { useRef } from "react";
 import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import { ArrowRight, Check } from "lucide-react";
-import { APP_SIGN_UP_URL } from "../appLinks";
+import { appLink, APP_SIGN_UP_URL } from "../appLinks";
 import { CtaLink } from "../components/CtaLink";
 import { CONTAINER, EASE, SectionHeading, VIEWPORT, fadeUp, stagger } from "../components/motion";
 import { cn } from "../utils/cn";
@@ -80,7 +80,7 @@ export const Community: FC = () => {
             transition={{ duration: 0.7, ease: EASE, delay: 0.4 }}
             className="mt-10"
           >
-            <CtaLink href={APP_SIGN_UP_URL} size="lg">
+            <CtaLink href={appLink(APP_SIGN_UP_URL)} size="lg">
               Sign Up
               <ArrowRight className="size-5 transition-transform duration-300 group-hover:translate-x-1" aria-hidden="true" />
             </CtaLink>

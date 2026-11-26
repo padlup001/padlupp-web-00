@@ -8,7 +8,7 @@ import {
   useSpring,
 } from "framer-motion";
 import { Menu, X } from "lucide-react";
-import { APP_SIGN_IN_URL, APP_SIGN_UP_URL } from "../appLinks";
+import { appLink, APP_SIGN_IN_URL, APP_SIGN_UP_URL } from "../appLinks";
 import { cn } from "../utils/cn";
 import { CtaLink } from "./CtaLink";
 import { EASE } from "./motion";
@@ -75,12 +75,12 @@ export const Header: FC = () => {
         <div className="flex shrink-0 items-center gap-1 sm:gap-3">
           <nav aria-label="Account" className="flex items-center gap-1 sm:gap-3">
             <a
-              href={APP_SIGN_IN_URL}
+              href={appLink(APP_SIGN_IN_URL)}
               className="whitespace-nowrap rounded-lg px-2 py-2 text-sm font-semibold text-slate-700 no-underline transition-colors hover:text-brand-blue focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue sm:px-3 sm:text-base"
             >
               Sign In
             </a>
-            <CtaLink href={APP_SIGN_UP_URL} size="sm" className="sm:text-base">
+            <CtaLink href={appLink(APP_SIGN_UP_URL)} size="sm" className="sm:text-base">
               Sign Up
             </CtaLink>
           </nav>

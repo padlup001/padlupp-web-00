@@ -2,7 +2,7 @@ import type { FC } from "react";
 import { useRef } from "react";
 import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import { ArrowRight } from "lucide-react";
-import { APP_SIGN_UP_URL } from "../appLinks";
+import { appLink, APP_SIGN_UP_URL } from "../appLinks";
 import { CtaLink } from "../components/CtaLink";
 import { EASE, VIEWPORT, fadeUp, stagger } from "../components/motion";
 import cardLeftImage from "../assets/images/card_left.png";
@@ -57,7 +57,7 @@ export const FinalCta: FC = () => {
             Ready to stay accountable and achieve more?
           </motion.p>
           <motion.div variants={fadeUp} className="mt-9">
-            <CtaLink href={APP_SIGN_UP_URL} size="lg">
+            <CtaLink href={appLink(APP_SIGN_UP_URL)} size="lg">
               Sign Up
               <ArrowRight className="size-5 transition-transform duration-300 group-hover:translate-x-1" aria-hidden="true" />
             </CtaLink>

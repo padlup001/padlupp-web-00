@@ -2,7 +2,7 @@ import type { FC } from "react";
 import { useRef } from "react";
 import { motion, useReducedMotion, useScroll, useSpring } from "framer-motion";
 import { ArrowRight } from "lucide-react";
-import { APP_SIGN_UP_URL } from "../appLinks";
+import { appLink, APP_SIGN_UP_URL } from "../appLinks";
 import { CtaLink } from "../components/CtaLink";
 import { CONTAINER, Reveal, SectionHeading, VIEWPORT, fadeUp, stagger } from "../components/motion";
 import { cn } from "../utils/cn";
@@ -84,7 +84,7 @@ export const HowItWorks: FC = () => {
         </motion.ol>
 
         <Reveal className="mt-14 flex justify-center" delay={0.2}>
-          <CtaLink href={APP_SIGN_UP_URL}>
+          <CtaLink href={appLink(APP_SIGN_UP_URL)}>
             Sign Up
             <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-1" aria-hidden="true" />
           </CtaLink>
